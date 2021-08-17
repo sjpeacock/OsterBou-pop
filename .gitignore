@@ -6,20 +6,25 @@
 
 README.Rmd
 
+ignoreCode/ 
+
 MTE_dataAnalysis/output/
 MTE_dataAnalysis/plots/
 
 BathurstSurvey/
 
 simulations/output
-simulations/figures 
+simulations/ignore 
 
 tempData/migRouteOutput
 tempData/NARR/otherDat
 tempData/NARR/tsoil
 
-figures/
+tempData/climateChange/monthly
+tempData/climateChange/seasonal
 
+figures/
+ranges/
 
 *.rds
 *.RData
