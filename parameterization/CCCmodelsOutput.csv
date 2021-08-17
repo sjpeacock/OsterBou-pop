@@ -1,0 +1,11 @@
+﻿model,range,lat,lon,season,tempIncrease
+RCP2.6,calving,66.5,-110.5,annual,
+RCP2.6,calving,66.5,-110.5,autumn,
+RCP2.6,calving,66.5,-110.5,winter,
+RCP2.6,calving,66.5,-110.5,spring,
+RCP2.6,calving,66.5,-110.5,summer,
+RCP8.5,calving,66.5,-110.5,annual,
+RCP8.5,calving,66.5,-110.5,autumn,
+RCP8.5,calving,66.5,-110.5,winter,
+RCP8.5,calving,66.5,-110.5,spring,
+RCP8.5,calving,66.5,-110.5,summer,
