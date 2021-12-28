@@ -10,6 +10,88 @@ cols2 <- colPal2(7)
 
 names(cols) <- c("Calving", "Summer", "Spring", "Fall", "Winter", "purple", "grey")
 names(cols2) <- c("Calving", "Summer", "Spring", "Fall", "Winter", "purple", "grey")
+
+###############################################################################
+# Annual cycle
+###############################################################################
+library(REdaS)
+
+# Color for ranges
+colRange <- c(winter = 4, spring = 3, calving = 7, summer = 2, fall = 1)
+
+# There are in reality 150 animals in our database. 
+# I added two for Summer 2015 just so that the season appears in the boxplot
+
+nv <- 365
+angle.inc <- 2 * pi/nv
+angles <- rev(seq(0, 2 * pi - angle.inc, by = angle.inc)+pi/2)
+xv <- cos(angles)
+yv <- sin(angles)
+m <- as.numeric(strftime(as.Date(paste("2014", c(1:12), "01", sep="-"), format="%Y-%m-%d"), format="%j"))
+
+
+winter <- c(1:109)
+spring <- c(110:152)
+calving <- c(153:167)
+postCalving <- c(168:179)
+summer <- c(180:249)
+fall <- c(250:334)
+rut <- c(290:304)
+earlyWinter <- c(335:365)
+
+# Breeding date, when animals move up a class, is June 7 (DOY = 158)
+breedDOY <- as.numeric(strftime(as.Date("1985-06-07"), "%j"))
+
+# L4 resume development at the start of spring migration
+L4startDOY <- as.numeric(strftime(as.Date("1985-04-20"), "%j"))
+
+# jpeg(filename="Annual_cycle.jpg", width=480, height=480, pointsize=12, quality=600)
+quartz(width = 3, height = 3.5, pointsize = 8)
+par(mar=c(2,1,4,1))
+plot(c(-1.5,1.5), c(-1.5, 1.5), "n", bty="n", xaxt="n", yaxt="n", xlab="", ylab="")
+polygon(xv, yv, border = 1)
+# points(c(0, -1, 0, 1), c(1, 0, -1, 0), pch=19)
+text((cos(angles)*1.2)[m], (sin(angles)*1.2)[m], c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"))
+
+lines(xv[earlyWinter], yv[earlyWinter], col = colRange[winter], lwd = 7)
+lines(xv[winter], yv[winter], col = colRange["winter"], lwd = 7)
+
+lines(xv[spring], yv[spring], col = colRange["spring"], lwd = 3)
+
+lines(xv[calving], yv[calving], col = colRange["calving"], lwd = 7)
+lines(xv[postCalving], yv[postCalving], col = colRange["calving"], lwd = 3)
+
+lines(xv[summer], yv[summer], col = colRange["summer"], lwd = 7)
+
+lines(xv[fall], yv[fall], col = colRange["fall"], lwd = 3)
+
+
+legend(-1.7, 2.2, lwd = c(7, 3, 7, 3, 7, 3), col = colRange[c("winter", "spring", "calving", "calving", "summer", "fall")], legend = c("winter", "spring", "calving", "post-calving", "summer", "fall"), bty="n", title = "Season", xpd = NA, ncol = 3)
+
+points(xv[spring[1]], yv[spring[1]])
+text(xv[spring[1]], yv[spring[1]], paste0(strftime(as.Date(paste("2001", spring[1], sep = "-"), format = "%Y-%j"), format = "%b %d"), "   "), srt = rad2deg(angles[spring[1]]), adj = 1)
+
+points(xv[breedDOY], yv[breedDOY])
+text(xv[breedDOY], yv[breedDOY], "Calving - Jun 7   ", srt = rad2deg(angles[breedDOY]), adj = 1)
+
+points(xv[summer[1]], yv[summer[1]])
+text(xv[summer[1]], yv[summer[1]], paste0(strftime(as.Date(paste("2001", summer[1], sep = "-"), format = "%Y-%j"), format = "%b %d"), "   "), srt = rad2deg(angles[summer[1]]), adj = 1)
+
+points(xv[fall[1]], yv[fall[1]])
+text(xv[fall[1]], yv[fall[1]], "   Sept 7", srt = 180+rad2deg(angles[fall[1]]), adj = 0)
+
+points(xv[earlyWinter[1]], yv[earlyWinter[1]])
+text(xv[earlyWinter[1]], yv[earlyWinter[1]], "   Dec 1", srt = 180+rad2deg(angles[earlyWinter[1]]), adj = 0)
+
+lines((cos(angles)*0.9)[rut], (sin(angles)*0.9)[rut], lwd = 1)
+text(xv[mean(rut)], yv[mean(rut)], paste0("    ", "Rut"), srt = 180+rad2deg(angles[mean(rut)]), adj = 0)
+
+# points((cos(angles)*0.9)[breedDOY - 240 + 365], (sin(angles)*0.9)[breedDOY - 240 + 365], pch = 8)
+points(xv[breedDOY - 240 + 365], yv[breedDOY - 240 + 365], pch = 8, cex = 1.5)
+text(xv[breedDOY - 240 + 365], yv[breedDOY - 240 + 365], paste0("   ", strftime(as.Date(paste("2001", breedDOY - 240 + 365, sep = "-"), format = "%Y-%j"), format = "%b %d")), srt = 180+rad2deg(angles[breedDOY - 240 + 365]), adj = 0)
+
+
+legend("bottomleft", pch = 8, pt.cex = 1.5, bty = "n", "Date when parasite burdens influence pregnancy")
 ###############################################################################
 # Conceptual illustration of MTE relationships
 ###############################################################################
@@ -89,225 +171,54 @@ DOY <- c(1:365)
 
 pI4 <- c(rep(1, 109), 1/(1 + exp(-0.08*(c(110:365) - 172))))
 
-quartz(width = 6.3, height = 3, pointsize = 10)
-par(mfrow = c(1,1), mar = c(3,4,5,10))
-plot(z, DOY, "n", ylim = c(0,1), ylab  = "Proportion arresting", las = 1, xlab = "", xaxs = "i")
-axis(side = 3, at = z[c(1, seq(90, 365, 90))], labels = c(1, seq(90, 365, 90)))
-lines(z, pI4, lwd = 3, col = cols[4])
-abline(h = 1, col = cols[1], lwd = 1.5, lty = 1)
-abline(h = 0.5, col = cols[2], lwd = 1.5, lty = 2)
-abline(h = 0, col = cols[3], lwd = 1.5, lty = 3)
-u <- par('usr')
-arrows(x0 = z[110], x1 = z[110], y1 = u[3], y0 = 1.2, xpd = NA, length = 0.08)
-text(z[110], 1.4, "Resumption of development \n Apr 20", xpd = NA)
+quartz(width = 3.2, height = 2, pointsize = 10)
+par(mfrow = c(1,1), mar = c(3,4,1,1))
 
-# arrows(x0 = z[172], x1 = z[172], y1 = 0.5, y0 = 1.3, xpd = NA, length = 0.08)
-abline(v = z[172], lty = 2)# text(z[172], 1.45, "Solstice\nJun 21", xpd = NA)
-
-
-# arrows(x0 = z[232], x1 = z[232], y1 = 1, y0 = 1.3, xpd = NA, length = 0.08)
-# text(z[232], 1.4, "Aug 20", xpd = NA)
-
-legend(5857, 0.6, lwd = c(rep(1.5, 3),3), lty = c(1:3,1), col = cols[1:4], c("Scenario 1", "Scenario 2", "Scenario 3", "Scenario 4"), bty = "n", xpd = NA)
+plot(z, DOY, "n", ylim = c(0,1), ylab  = "Proportion arresting", las = 1, xlab = "", xaxs = "i", bty = "l")
+lines(z, pI4, lty = 4, lwd = 1.5)
+abline(h = 1, lty = 1)
+abline(h = 0.5, lty = 2)
+abline(h = 0, lty = 3)
+legend(as.Date("1985-08-15"), 0.55, lwd = c(1,1,1,1.5), lty = c(1:4), c("Scenario 1", "Scenario 2", "Scenario 3", "Scenario 4"), xpd = NA, bg = "white", cex = 0.8)
 
 ###############################################################################
 # Temperature data vs model
 ###############################################################################
 
-tempDat <- read.csv("parameterization/BAH_temps.csv")
+allTemps <- readRDS("tempData/migRouteOutput/allTemps_migPath6.rds")
+narr21 <- read.csv("tempData/groundTemps_migPath6_330km.csv")
+ccAnomalies <- read.csv("tempData/ccAnomalies_migPath6_330km.csv")
 
-tempDat$Date <- as.Date(tempDat$Date)
-tempDat$DOY <- strftime(tempDat$Date, format = "%j")
-tempDat$year <- strftime(tempDat$Date, format = "%Y")
-
-season <- unique(tempDat$Range)
-# mean temperature c("Summer",  "Winter",  "Spring",  "Fall", "Calving")
-ck <- c(-10.974553,  -8.029248,  -9.808518,  -9.750996, -11.466570) 
-# half annual temperature range (amplitude)
-dk <- c(22.546752,  23.653142,  22.808474,  22.990450, 21.577856) 
-# DOY corresponding to max temperature
-t0 <- c(199.922313, 198.146132, 199.304408, 199.167954, 201.066183)
-
-# tempChanges <- cbind(mean = c(0, 2, 5, 10, rep(0, 4)), range = c(rep(0, 4), c(0, 2, 5, 10)))
-# 
-# par(mfrow = c(2,2), mar = c(4,4,2,1))
-# 
-# # Plot two different seasons, different years
-# 
-# ind1 <- which(tempDat$year == 1980)
-# ind2 <- which(tempDat$year == 2000)
-# ind3 <- which(tempDat$year == 2019)
-# 
-# quartz(width = 6.3, height = 4, pointsize = 10)
-# par(mfrow = c(2,2), mar = c(3, 1, 0, 0), oma = c(0, 4, 1, 1))
-# 
-# # for(i in 1:2){
-# i <- 2
-# 	season.i <- c("Calving", "Winter")[i]
-# 	I <- match(season.i, c("Summer",  "Winter",  "Spring",  "Fall", "Calving"))
-# 	
-# 	plot(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], tempDat$T2Mean[ind1][tempDat$Range[ind1] == season.i], "l", ylim = c(-45, 20), col = cols2[season.i], las = 1, xlab = "", ylab = "", yaxt = "n")
-# 	axis(side = 2, at = seq(-40, 20, 20), las = 1)
-# 	lines(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], tempDat$T2Mean[ind2][tempDat$Range[ind2] == "Calving"], col= cols2[season.i])
-# 	lines(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], tempDat$T2Mean[ind3][tempDat$Range[ind2] == season.i], col= cols2[season.i])
-# 	lines(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], ck[I] + dk[I] * cos((1:366 - t0[I])* 2 * pi / 365), col = cols[season.i], lwd = 2)
-# 	mtext(side = 3, line = -1.5, paste(" ", LETTERS[1]), adj = 0)
-# # }
-# # legend("topleft", lwd= c(1, 2), col = c(cols2[season.i], cols[season.i]), c("Daily mean", "Fitted sine curve"), bty = "n")
-# 
-# plot(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], tempDat$T2Mean[ind1][tempDat$Range[ind1] == season.i], "n", ylim = c(-45, 20), col = cols2[season.i], las = 1, xlab = "", ylab = "", yaxt = "n")
-# axis(side = 2, at = seq(-40, 20, 20), labels = FALSE)
-# for(i in 1:5){
-# 	season.i <- c("Summer",  "Winter",  "Spring",  "Fall", "Calving")[i]
-# 	I <- match(season.i, c("Summer",  "Winter",  "Spring",  "Fall", "Calving"))
-# 	lines(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], ck[I] + dk[I] * cos((1:366 - t0[I])* 2 * pi / 365), col = cols[season.i])
-# }
-# mtext(side = 3, line = -1.5, paste(" ", LETTERS[2]), adj = 0)
-# legend("bottom", fill = cols[c(5,3,1,2,4)], names(cols)[c(5,3,1,2,4)], cex = 0.8, border = NA, bty = "n", title = "Range")
-# 
-# season.i <- "Winter"
-# I <- match(season.i, c("Summer",  "Winter",  "Spring",  "Fall", "Calving"))
-# 
-# plot(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], ck[I] + dk[I] * cos((1:366 - t0[I])* 2 * pi / 365), "l", , las = 1, xlab = "", ylab = "", ylim = c(-45, 28), lwd = 2, col = cols[season.i])
-# # axis(side = 2, labels = FALSE)
-# for(i in 1:3){
-# 	lines(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], (ck[I]+ c(2, 5, 10)[i]) + dk[I] * cos((1:366 - t0[I])* 2 * pi / 365), lty = i+1, col = cols[season.i]) 
-# }
-# mtext(side = 3, line = -1.5, paste(" ", LETTERS[3]), adj = 0)
-# legend("bottom", lty = c(1:4), lwd = c(2, rep(1, 3)), c("Current", expression(paste("+2", degree, "C")), expression(paste("+5", degree, "C")), expression(paste("+10", degree, "C"))),cex = 0.8, bty = "n", col = cols[season.i], title = "Change in mean")
-# 
-# plot(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], ck[I] + dk[I] * cos((1:366 - t0[I])* 2 * pi / 365), "l", , las = 1, xlab = "", ylab = "", ylim = c(-45, 28), lwd = 2, col = cols[season.i], yaxt = "n")
-# axis(side = 2, labels = FALSE)
-# for(i in 1:3){
-# 	lines(tempDat$Date[ind1][tempDat$Range[ind1] == season.i], ck[I] + (dk[I]+ c(2, 5, 10)[i]) * cos((1:366 - t0[I])* 2 * pi / 365), lty = i+1, col = cols[season.i]) 
-# }
-# mtext(side = 3, line = -1.5, paste(" ", LETTERS[4]), adj = 0)
-# legend("bottom", lty = c(1:4), lwd = c(2, rep(1, 3)), c("Current", expression(paste("+2", degree, "C")), expression(paste("+5", degree, "C")), expression(paste("+10", degree, "C"))),cex = 0.8, bty = "n", col = cols[season.i], title = "Change in range")
-# 
-# 
-# mtext(side = 2, line = 2, outer = TRUE, expression(paste("Temperature (", degree, "C)")))
-# 
-
-#------------------------------------------------------------------------------
-# Including RCP temperature changes
-
-tChange <- read.csv("ClimateChangeData/tasSummaryCalving.csv")
-parChange <- read.csv("ClimateChangeData/parChange.csv")
-
-DOY <- c(1:365)
-xDate <- as.Date(paste("2100", DOY, sep = "-"), format = "%Y-%j")
-xSeason <- as.Date(paste("2100", c(3, 6, 9, 12), 01, sep = "-"))
-
+x.ind <- 330
+xDate <- as.Date(paste(2001, c(1:365), sep = "-"), format = "%Y-%j")
 quartz(width = 3.2, height = 6, pointsize = 10)
-par(mfrow = c(3,1), mar = c(3,5,1,1))
+par(mfrow = c(3,1), mar = c(2,5,1,1), oma = c(2,0,0,0))
 
-# A) Real temperature data from MERRA
-ind1 <- which(tempDat$year == 2001) #2000 was leap year!
-season1 <- "Calving"
-I <- match(season1, c("Summer",  "Winter",  "Spring",  "Fall", "Calving"))
-# 	
-plot(xDate, tempDat$T2Mean[ind1][tempDat$Range[ind1] == season1], "l", ylim = c(-45, 20), col = grey(0.6), las = 1, xlab = "", ylab = expression(paste("Temperature (", degree, "C)", sep = "")), yaxt = "n")
-axis(side = 2, at = seq(-40, 20, 20), las = 1)
-lines(xDate, ck[I] + dk[I] * cos((DOY - t0[I])* 2 * pi / 365), col = 1, lwd = 2)
-mtext(side = 3, line = -1.5, paste(" ", LETTERS[1]), adj = 0)
+# Ground temps current
+plot(xDate, narr21[1,], "n", ylim = c(-30, 30), xaxs = "i", ylab = "", xlab = "", las = 1)
+for(i in 1:21) lines(xDate, narr21[i,], col = grey(0.8), lwd = 0.8)
+abline(h = 0,lty = 2)
+lines(xDate, allTemps[[1]][, x.ind], lwd = 1.5)
+mtext(side = 3, line = -1.5, "  A", adj = 0)
 
-
-# B) Climate change scenarios
-plot(xDate, rep(1, 365), "n", col = 4, xlab = "", ylab = expression(paste("Temperature change (", degree, "C)", sep = "")), las = 1, ylim = range(tChange[, c('tas25', 'tas75')]), xaxs = "i")
-
-# Add seasonal data from RCP
-for(j in 1:2){ # for each model
-	for(i in 2:4){ # for each season except winter (which spans year)
-		polygon(x = xSeason[c(i-1, i-1, i, i)], y = c(tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == c("DJF", "MAM", "JJA", "SON")[i], c('tas25', 'tas75', 'tas75', 'tas25')]), col = cols2[c(4, 1)[j]], border = NA)
-		segments(x0 = xSeason[i-1], x1 = xSeason[i], y0 = tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == c("DJF", "MAM", "JJA", "SON")[i], 'tas50'], col = cols[c(4, 1)[j]])
-	}
-	# FOr winter
-	polygon(x = c(rep(as.Date("2100-01-01"), 2), xSeason[c(1,1)]), y = c(tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == "DJF", c('tas25', 'tas75', 'tas75', 'tas25')]), col = cols2[c(4, 1)[j]], border = NA)
-	segments(x0 = as.Date("2100-01-01"), x1 = xSeason[1], y0 = tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == "DJF", 'tas50'], col = cols[c(4, 1)[j]])
-	polygon(x = c(xSeason[c(4, 4)] , rep(as.Date("2100-12-31"), 2)), y = c(tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == "DJF", c('tas25', 'tas75', 'tas75', 'tas25')]), col = cols2[c(4, 1)[j]], border = NA)
-	segments(x0 = xSeason[4], x1 = as.Date("2100-12-31"), y0 = tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == "DJF", 'tas50'], col = cols[c(4, 1)[j]])				
-	
-	lines(xDate, parChange[parChange$X == 'ck', j+1] + parChange[parChange$X == 'dk', j+1] * cos((DOY - parChange[parChange$X == 't0', j+1])* 2 * pi / 365), col = cols[c(4, 1)[j]], lty = 2)
-	
+# Anomalies
+plot(xDate, ccAnomalies[, 1], "n", ylim = c(0,15), xaxs = "i", ylab = "", xlab = "", las = 1)
+for(r in 1:2){
+	lines(xDate, ccAnomalies[, r], col = c(4,2)[r], lwd = 0.8)
+	lines(xDate, ccAnomalies[, r+2], col = c(4,2)[r], lwd = 1.5)
 }
-mtext(side = 3, line = -1.5, paste(" ", LETTERS[2]), adj = 0)
+mtext(side = 3, line = -1.5, "  B", adj = 0)
 
-# Bringing it together: temps under two scenarios
-tempNow <- ck[I] + dk[I] * cos((DOY - t0[I])* 2 * pi / 365)
-temp26 <- tempNow +	parChange[parChange$X == 'ck', 2] + parChange[parChange$X == 'dk', 2] * cos((DOY - parChange[parChange$X == 't0', 2])* 2 * pi / 365)
-temp85 <- tempNow +	parChange[parChange$X == 'ck', 3] + parChange[parChange$X == 'dk', 3] * cos((DOY - parChange[parChange$X == 't0', 3])* 2 * pi / 365)
-temps <- cbind(tempNow, temp26, temp85)
+# Together
+plot(xDate, allTemps[[1]][, x.ind], "n", ylim = c(-30, 30), xaxs = "i", ylab = "", xlab = "", las = 1)
+abline(h = 0,lty = 2)
 
-plot(xDate, tempNow, "l", lwd = 2, col = 1, xlab = "", ylab = expression(paste("Temperature (", degree, "C)", sep = "")), las = 1, ylim = c(-45, 20), yaxt = "n")
-axis(side = 2, at = seq(-40, 20, 20), las = 1)
-for(j in 1:2) lines(xDate, temps[, j+1], col = cols[c(4, 1)[j]], lwd = 2)
-mtext(side = 3, line = -1.5, paste(" ", LETTERS[3]), adj = 0)
- legend("topright", lwd = 2, col = c(1,cols[c(4, 1)]), legend  = c("past", "RCP 2.6", "RCP 8.5"), bty = "n" )
- 
-#------------------------------------------------------------------------------
-# Adjusting for ground temperatures
-#------------------------------------------------------------------------------
-tempPred <- list(
-	air = list(
-		current = predict.temp(timeDat = NA, ground = FALSE),
-		low = predict.temp(timeDat = NA, climateScenario = "rcp26", ground = FALSE),
-		high = predict.temp(timeDat = NA, climateScenario = "rcp85", ground = FALSE)),
-	ground = list(
-		current = predict.temp(timeDat = NA),
-		low = predict.temp(timeDat = NA, climateScenario = "rcp26"),
-		high = predict.temp(timeDat = NA, climateScenario = "rcp85"))
-)
- 	
- 
-quartz(width = 6.4, height = 4, pointsize = 10)
-# layout(matrix(c(1,2,3,3), nrow = 2, byrow = TRUE))
-par(mfrow= c(2,2), mar = c(2, 4, 1, 2), oma = c(1,1,0,0))
- 
-# A) Real temperature data from MERRA
-ind1 <- which(tempDat$year == 2001) #2000 was leap year!
-season1 <- "Calving"
-I <- match(season1, c("Summer",  "Winter",  "Spring",  "Fall", "Calving"))
-# 	
-plot(xDate, tempDat$T2Mean[ind1][tempDat$Range[ind1] == season1], "l", ylim = c(-40, 20), col = grey(0.6), las = 1, xlab = "", ylab = expression(paste("Air temperature (", degree, "C)", sep = "")), yaxt = "n", xaxs = "i")
-abline(h = 0, lty = 2)
-axis(side = 2, at = seq(-40, 20, 20), las = 1)
-lines(xDate, tempPred$air$current[, I], col = 1)
-mtext(side = 3, line = -1.5, paste(" ", LETTERS[1]), adj = 0)
-
-
-# B) Climate change scenarios
-plot(xDate, rep(1, 365), "n", col = 4, xlab = "", ylab = expression(paste("Temperature change (", degree, "C)", sep = "")), las = 1, ylim = range(tChange[, c('tas25', 'tas75')]), xaxs = "i")
-
-# Add seasonal data from RCP
-for(j in 1:2){ # for each model
-	for(i in 2:4){ # for each season except winter (which spans year)
-		polygon(x = xSeason[c(i-1, i-1, i, i)], y = c(tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == c("DJF", "MAM", "JJA", "SON")[i], c('tas25', 'tas75', 'tas75', 'tas25')]), col = cols2[c(4, 1)[j]], border = NA)
-		segments(x0 = xSeason[i-1], x1 = xSeason[i], y0 = tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == c("DJF", "MAM", "JJA", "SON")[i], 'tas50'], col = cols[c(4, 1)[j]])
-	}
-	# FOr winter
-	polygon(x = c(rep(as.Date("2100-01-01"), 2), xSeason[c(1,1)]), y = c(tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == "DJF", c('tas25', 'tas75', 'tas75', 'tas25')]), col = cols2[c(4, 1)[j]], border = NA)
-	segments(x0 = as.Date("2100-01-01"), x1 = xSeason[1], y0 = tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == "DJF", 'tas50'], col = cols[c(4, 1)[j]])
-	polygon(x = c(xSeason[c(4, 4)] , rep(as.Date("2100-12-31"), 2)), y = c(tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == "DJF", c('tas25', 'tas75', 'tas75', 'tas25')]), col = cols2[c(4, 1)[j]], border = NA)
-	segments(x0 = xSeason[4], x1 = as.Date("2100-12-31"), y0 = tChange[tChange$model == c("rcp26", "rcp85")[j] & tChange$season == "DJF", 'tas50'], col = cols[c(4, 1)[j]])				
-	
-	lines(xDate, parChange[parChange$X == 'ck', j+1] + parChange[parChange$X == 'dk', j+1] * cos((DOY - parChange[parChange$X == 't0', j+1])* 2 * pi / 365), col = cols[c(4, 1)[j]], lty = 2)
-	
+for(r in 1:3){
+	lines(xDate, allTemps[[r]][, x.ind], col = c(1,4,2)[r], lwd = 1.5)
 }
-mtext(side = 3, line = -1.5, paste(" ", LETTERS[2]), adj = 0)
-  
-# C) Annual air temperature projected
-for(i in 1:2){
-	plot(xDate, tempPred$air$current[, I], "n", xlab = "", ylab = c(expression(paste("Air temperature (", degree, "C)", sep = "")), expression(paste("Ground temperature (", degree, "C)", sep = "")))[i], las = 1, ylim = c(-40, 20), yaxt = "n", xaxs = "i")
-	if(i==2) abline(h = -15, lty = 3)
-	axis(side = 2, at = seq(-40, 20, 20), las = 1)
-	for(j in 1:3){
-			lines(xDate, tempPred[[i]][[j]][, I], col = c(1, cols[c(4, 1)])[j])
-		}
-	mtext(side = 3, line = -1.5, paste(" ", LETTERS[2+i]), adj = 0)
-	abline(h = 0, lty = 2)
-}
-legend("bottomright", lwd = 1, col = c(1,cols[c(4, 1)]), legend  = c("past", "low emissions", "high emissions"), bty = "n" )
-	
+mtext(side = 3, line = -1.5, "  C", adj = 0)
+
+mtext(side = 2, outer = TRUE, expression(paste("Temperature (", degree, "C)")), line = -2)
 ###############################################################################
 # Larvae parameters and MTE relationships
 ###############################################################################
@@ -355,30 +266,38 @@ predict.MTE <- function(
 	}
 } # end function
 
-# Function to plot true temperture range and 10th and 90th quantiles
-plotTpolys <- function(){
-	u <- par('usr')
-	polygon(x = c(range(tempDat$T2Mean), rev(range(tempDat$T2Mean))), y = u[c(3,3,4,4)], border = NA, col = cols2[4])#"#00000030")
-	polygon(x = c(quantile(tempDat$T2Mean, c(0.1, 0.9)), rev(quantile(tempDat$T2Mean, c(0.1, 0.9)))), y = u[c(3,3,4,4)], border = NA, col = cols2[5])#
-}
+# Read in temperature data including CC scenarios
+# Can choose different temperature profiles depending on migration route
+tempDat <- readRDS(paste0("tempData/migRouteOutput/allTemps_migPath", 6, ".rds"))
+tempRanges <- rbind(range(tempDat[[1]][120:300, 330]), range(tempDat[[2]][120:300, 330]), range(tempDat[[3]][120:300, 330]))
 
-
+source("simulations/popFunctions.R")
 temp <- seq(5, 35, 5)
-temp.all <- seq(-50, 40, 0.2)
+temp.all <- seq(-30, 40, 0.2)
 quartz(width = 8.3, height = 2.8, pointsize = 10)
 par(mfrow = c(1,3), mar = c(3,3,2,1), oma = c(1, 2, 0, 8))
 
 #------------------------------------------------------------------------------
 #mu0
 #------------------------------------------------------------------------------
-plot(temp.all, rep(0, length(temp.all)), "n", las = 1, ylab = "", xlab = "", main = expression(mu[0]), xlim = c(-50, 40), ylim = c(0, 1))
-plotTpolys()
+plot(temp.all, rep(0, length(temp.all)), "n", las = 1, ylab = "", xlab = "", ylim = c(0, 1), xaxs = "i")
 
-lines(temp.all, predict.MTE(params = c(a = convNum(par1[9,3]), E = convNum(par1[10,3]), Eh = NA, Th = NA, z = 1), temp = temp.all), lty = 3, lwd = 1.5)
+for(r in 1:3){
+	# temptemp <- seq(tempRanges[r, 1], tempRanges[r,2], length.out = 50)
+	# lines(temptemp,  predict.mu0(temptemp), col = c("#00000060", "#4995E090", "#CF5D6D90")[r], lwd = c(8,6,4)[r])
+	temptemp <- seq(tempRanges[r, 1], tempRanges[r,2], 0.2)
+	if(r == 1){
+		polygon(x = c(rep(tempRanges[r,1], 2), rep(-50, 2), temptemp, tempRanges[r,2]), 
+					y = c(-1, rep(min(predict.mu0(temptemp)), 2), max(predict.mu0(temptemp)), predict.mu0(temptemp), -1), col = c("#00000020", "#4995E040", "#CF5D6D60")[r], border = NA)
+	} else {
+		polygon(x = rep(c(tempRanges[r,1], -50, tempRanges[r,2]), each = 2), y = c(-1, rep(predict.mu0(tempRanges[r,1]), 2), rep(predict.mu0(tempRanges[r,2]), 2), -1), col = c("#00000020", "#4995E040", "#CF5D6D60")[r], border = NA)
+	}
+}
 
+lines(temp.all, predict.MTE(params = c(a = convNum(par1[9,3]), E = convNum(par1[10,3]), Eh = NA, Th = NA, z = 1), temp = temp.all), lty = 3)
 lines(temp.all, predict.mu0(temp.all))
 
-plotCI(temp, convNum(par1[1:7, 'mu0'], type = "m"), li = convNum(par1[1:7, 'mu0'], type = "l"), ui = convNum(par1[1:7, 'mu0'], type = "u"), gap = 0,  sfrac= 0.008, add = TRUE, pch = 21, pt.bg = "white")
+plotCI(temp, convNum(par1[1:7, 'mu0'], type = "m"), li = convNum(par1[1:7, 'mu0'], type = "l"), ui = convNum(par1[1:7, 'mu0'], type = "u"), gap = 0,  sfrac= 0.008, add = TRUE, pch = 21, pt.bg = "white", cex = 1.5)
 
 # Points from Aleuy et al. (2020) Marshallagia study
 # freezing survival of L1
@@ -387,39 +306,55 @@ points(-20, 0.9857, pch = 8, xpd = NA)
 mtext(side = 3, line = -1.5, paste(" ", LETTERS[1]), adj = 0)
 
 #------------------------------------------------------------------------------
-# mu1
+# rho
 #------------------------------------------------------------------------------
 
-plot(temp.all, rep(0, length(temp.all)), "n", las = 1, ylab = "", xlab = "", main = expression(mu[1]), xlim = c(-50, 40), ylim = c(0, 0.1))
-plotTpolys()
+plot(temp.all, rep(0, length(temp.all)), "n", las = 1, ylab = "", xlab = "", ylim = c(0, 0.1), xaxs = "i")
 
-lines(temp.all, rep(convNum(par1[9, 'mu1']), length(temp.all)), lty = 3, lwd = 1.5)
+# Polygon
+for(r in 1:3){
+	# temptemp <- seq(tempRanges[r, 1], tempRanges[r,2], length.out = 50)
+	# lines(temptemp,  predict.rho0(temptemp), col = c("#00000060", "#4995E090", "#CF5D6D90")[r], lwd = c(8,6,4)[r])
+	polygon(x = rep(c(tempRanges[r,1], -50, tempRanges[r,2]), each = 2), y = c(-1, rep(predict.rho0(tempRanges[r,1]), 2), rep(predict.rho0(tempRanges[r,2]), 2), -1), col = c("#00000020", "#4995E040", "#CF5D6D60")[r], border = NA)
+}
 
+lines(temp.all, predict.MTE(params = c(a = convNum(par1[9, 'rho']), E = convNum(par1[10, 'rho']), Eh = convNum(par1[11, 'rho']), Th = 30.568, z = -1), temp = temp.all), lty = 3, lwd = 1.5)
+lines(temp.all, predict.rho0(temp.all))
+
+plotCI(temp[1:7], convNum(par1[1:7, 'rho'], type = "m"), li = convNum(par1[1:7, 'rho'], type = "l"), ui = convNum(par1[1:7, 'rho'], type = "u"), gap = 0,  sfrac= 0.008, add = TRUE, pch = 21, pt.bg = "white", cex = 1.5)
+
+mtext(side = 3, line = -1.5, paste(" ", LETTERS[2]), adj = 0)
+#------------------------------------------------------------------------------
+# mu3
+#------------------------------------------------------------------------------
+
+plot(temp.all, rep(0, length(temp.all)), "n", las = 1, ylab = "", xlab = "", ylim = c(0, 0.1), xaxs = "i")
+for(r in 1:3){
+	# temptemp <- seq(tempRanges[r, 1], tempRanges[r,2], length.out = 50)
+	# lines(temptemp,  predict.mu3(temptemp), col = c("#00000060", "#4995E090", "#CF5D6D90")[r], lwd = c(8, 6, 4)[r])
+	polygon(x = rep(c(tempRanges[r,1], -50, tempRanges[r,2]), each = 2), y = c(-1, rep(predict.mu3(tempRanges[r,1]), 2), rep(predict.mu3(tempRanges[r,2]), 2), -1), col = c("#00000020", "#4995E040", "#CF5D6D60")[r], border = NA)
+}
+lines(temp.all, rep(convNum(par1[9, 'mu1']), length(temp.all)), lty = 3)
 lines(temp.all, predict.mu3(temp.all))
 
-plotCI(temp[1:6], convNum(par1[1:6, 'mu1'], type = "m"), li = convNum(par1[1:6, 'mu1'], type = "l"), ui = convNum(par1[1:6, 'mu1'], type = "u"), gap = 0,  sfrac= 0.008, add = TRUE, pch = 21, pt.bg = "white")
+plotCI(temp[1:6], convNum(par1[1:6, 'mu1'], type = "m"), li = convNum(par1[1:6, 'mu1'], type = "l"), ui = convNum(par1[1:6, 'mu1'], type = "u"), gap = 0,  sfrac= 0.008, add = TRUE, pch = 21, pt.bg = "white", cex = 1.5)
 
 # Points from Aleuy et al. (2020) Marshallagia study
 # freezing survival of L3
 points(-9, 0.002344, pch = 8, xpd = NA)
 points(-20, 0.01762, pch = 8, xpd = NA)
 # points(-35, 3, pch = 8, xpd = NA)
-mtext(side = 3, line = -1.5, paste(" ", LETTERS[2]), adj = 0)
-
-#------------------------------------------------------------------------------
-# rho
-#------------------------------------------------------------------------------
-
-plot(temp.all, rep(0, length(temp.all)), "n", las = 1, ylab = "", xlab = "", main = expression(rho), xlim = c(-50, 40), ylim = c(0, 0.1))
-plotTpolys()
-
-lines(temp.all, predict.MTE(params = c(a = convNum(par1[9, 'rho']), E = convNum(par1[10, 'rho']), Eh = convNum(par1[11, 'rho']), Th = 30.568, z = -1), temp = temp.all), lty = 3, lwd = 1.5)
-
-lines(temp.all, predict.rho0(temp.all))
-plotCI(temp[1:7], convNum(par1[1:7, 'rho'], type = "m"), li = convNum(par1[1:7, 'rho'], type = "l"), ui = convNum(par1[1:7, 'rho'], type = "u"), gap = 0,  sfrac= 0.008, add = TRUE, pch = 21, pt.bg = "white")
-
-legend(48, 0.1, pch = c(21, 8, NA, NA), lty = c(NA, NA, 3, 1), lwd = c(NA, NA, 1.5, 1), legend = c("Exp't estimates", "Marshallagia", "Fitted MTE", "Assumed MTE"), xpd = NA, bty = "n")
-
 mtext(side = 3, line = -1.5, paste(" ", LETTERS[3]), adj = 0)
+
+
+#------------------------------------------------------------------------------
+legend(42, 0.1, pch = c(21, 8, NA, NA), lty = c(NA, NA, 3, 1), lwd = c(NA, NA, 1.5, 1), legend = c("Exp't estimates", "Marshallagia", "Fitted MTE", "Assumed MTE"), xpd = NA, bty = "n")
+
+# legend(42, 0.06, lty = 1, lwd = c(8,6,4), col = c("#00000060", "#4995E090", "#CF5D6D90"), legend = c("current", "RCP 2.6", "RCP 8.5"), xpd = NA, bty = "n", title = "Summer\ntemperatures")
+
+legend(46, 0.06, fill = c("#00000020", "#4995E040", "#CF5D6D60"), border = NA, legend = c("current", "RCP 2.6", "RCP 8.5"), xpd = NA, bty = "n", title = "Summer\ntemperatures")
+
+
 mtext(side = 1, outer = TRUE, expression(paste("Temperature (", degree, "C)")))
 mtext(side = 2, outer = TRUE, "Parameter value")
+

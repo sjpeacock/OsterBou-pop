@@ -4,6 +4,11 @@ library(PBSmapping)
 gshhg <- "~/Google Drive/Mapping/gshhg-bin-2.3.7/"
 xlim <- c(-125, -100) + 360
 ylim <- c(60, 70)
+
+# Inset
+xlim <- c(-150, -80) + 360
+ylim <- c(45, 75)
+
 land <- importGSHHS(paste0(gshhg,"gshhs_i.b"), xlim = xlim, ylim = ylim, maxLevel = 2, useWest = TRUE)
 rivers <- importGSHHS(paste0(gshhg,"wdb_rivers_i.b"), xlim = xlim, ylim = ylim, useWest = TRUE)
 borders <- importGSHHS(paste0(gshhg,"wdb_borders_i.b"), xlim = xlim, ylim = ylim, useWest = TRUE, maxLevel = 1)
@@ -13,6 +18,10 @@ borders <- importGSHHS(paste0(gshhg,"wdb_borders_i.b"), xlim = xlim, ylim = ylim
 quartz(width = 5, height = 6)
 plotMap(land, xlim = xlim - 360, ylim = ylim,	col = grey(0.8), bg = "aliceblue", las = 1, lwd = 0.5, border = grey(0.6))
 
+# Inset
+plotMap(land, xlim = xlim - 360, ylim = ylim,	col = grey(0.8), bg = "aliceblue", las = 1, lwd = 0.5, border = grey(0.6), xaxt = "n", yaxt = "n")
+addLines(borders, col = grey(0.4))
+polygon(x = c(-122, -106, -106, -122), y = c(61, 61, 68, 68), border = 1, col = NA, lwd = 2)
 
 #######################################
 # Need a migration path that is 2268 km

@@ -313,7 +313,6 @@ DOY <- c(1:365)
 DOY.stitched <- rbind(t(array(rep(DOY, 21), dim = c(365, 21))),t(array(rep(DOY+365, 21), dim = c(365, 21))), t(array(rep(DOY+2*365, 21), dim = c(365, 21)))) 
 
 mcmcTemp <- array(NA, dim = c(n.mcmc, 365, 1135))
-# mcmcTemp.raw <- array(NA, dim = c(n.mcmc, 365, 1135))
 
 for(n in 1:n.mcmc){
 	for(i in 1:1135){
@@ -321,7 +320,6 @@ for(n in 1:n.mcmc){
 		# Extract temperatuers for given grid point
 		allTemps.ni <- allTemps[, , clippedGrid$num[which(clippedGrid$EID == mcmcGridPoints[i, n])]]
 		
-	
 		# Apply smoother
 		y <- rbind(allTemps.ni, allTemps.ni, allTemps.ni)
 		L2 <- lowess(y ~ DOY.stitched, f = 1/12)
@@ -331,6 +329,9 @@ for(n in 1:n.mcmc){
 	
 	}
 }
+
+# write.csv(allTemps[, , clippedGrid$num[which(clippedGrid$EID == mcmcGridPoints[330, n])]], file = "tempData/groundTemps_migPath6_330km.csv", row.names = FALSE)
+
 
 # Randomly choose 4 of the temp matrices to plot
 par(mfrow = c(2,2), mar = c(0,0,0,0), oma=c(5,5,2,2))
@@ -535,6 +536,9 @@ for(r in 1:2){
 		ccAnomaliesSmooth[r, ,j] <- L1$y[366:(2*365)]
 	}
 }
+
+# write.csv(t(rbind(ccAnomaliesLong[, , 330], ccAnomaliesSmooth[, ,330])), "tempData/ccAnomalies_migPath6_330km.csv", row.names = FALSE)
+
 
 # Plot check:
 xDate <- as.Date(paste("2000", c(1:12), 1, sep = "-"))

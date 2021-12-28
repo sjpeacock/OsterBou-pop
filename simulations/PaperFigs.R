@@ -43,18 +43,19 @@ source("simulations/calcGrid.R")
 ###############################################################################
 # Look at annual dynamics in year 30 of each simulation (pre-climate change)
 ###############################################################################
-
+N <- 6
 oneYear <- readRDS(paste0("simulations/output/oneYear30_migPath", N, ".rds"))
+# dimensions = mig/non-mig (2) * beta (3) * inhibition (4) * variable * day
 
 #------------------------------------------------------------------------------
 # Plot
 #------------------------------------------------------------------------------
 
 # Plot all levels of transmission or just the base level?
-allBeta <- FALSE
+allBeta <- TRUE
 
 # Plot resident populations in dashed
-plotRes <- FALSE
+plotRes <- TRUE
 
 if(allBeta == TRUE){
 	I <- c(1:3)
@@ -73,16 +74,21 @@ if(allBeta == TRUE){
 xDate <- as.Date(paste(30, c(1:365), sep = "-"), format = "%y-%j")
 yPerc <- 0.2
 
-par(oma = c(4, 5, 4, 1))
-par(mar = c(0,4,0,1))
-# [m, i, p, 5, j]
+
+if(allBeta == FALSE){
+	par(oma = c(4, 5, 4, 1))
+	par(mar = c(0,4,0,1))
+} else {
+	par(oma = c(4, 9, 4, 1))
+	par(mar = c(0,0,0,1))
+}
 
 for(i in I){
 	for(s in 1:5){ # For each stage
 		if(allBeta == FALSE){
 			ylim.s <- extendrange(oneYear[1, i, , s, ], f = c(0, yPerc))
 		} else {
-			ylim.s <- extendrange(oneYear[1, , , s, ], f = c(0, yPerc))
+			ylim.s <- extendrange(oneYear[1, 2, , s, ], f = c(0, yPerc))
 		}
 		
 		if(s == 3|s == 5){
@@ -93,40 +99,40 @@ for(i in I){
 		
 		# Plot migration periods as shaded
 		u <- par('usr')
-		polygon(x = as.Date(paste(2100, c(110, 153, 153, 110), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Spring migration
-		polygon(x = as.Date(paste(2100, c(169, 180, 180, 169), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Post-calving migration
-		polygon(x = as.Date(paste(2100, c(251, 355, 355, 251), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Fall migration
+		polygon(x = as.Date(paste(2300, c(110, 153, 153, 110), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Spring migration
+		polygon(x = as.Date(paste(2300, c(169, 180, 180, 169), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Post-calving migration
+		polygon(x = as.Date(paste(2300, c(251, 355, 355, 251), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Fall migration
 		
 		
+		if(s == 1 & i == min(I)) legend("topright", lty = 1:4, legend = paste("Scenario", c(1:4)), bg = "white", xpd = NA, bty = "n")
 		
 		for(p in 1:4){
-			lines(xDate, oneYear[1, i, p, s, ], col = cols[p], lwd = 1.5)
-			if(plotRes == TRUE) lines(xDate, oneYear[2, i, p, s, ], col = cols[p], lty = 2)
+			lines(xDate, oneYear[1, i, p, s, ], lty = p)
+			if(plotRes == TRUE) lines(xDate, oneYear[2, i, p, s, ], lty = p, col = "#00000050")
 		}
 		
 		if(i == 1 | allBeta == FALSE) mtext(side = 2, line = 1, c("Adult\nparasites", "Arrested\nlarvae", "Developing\nlarvae", "Pre-infective", "Infective")[s])
 		if((i == 1 | allBeta == FALSE) & s == 1){
-			# legend("topright", col = cols[c(1:4)], title = "Arresting", lwd = 1.5, legend = c("100%", "50%", "0%", "variable"), bg = "white")
 		}
-		mtext(side = 3, line = -1.5, paste("", LETTERS[s]), adj = 0)
+		if(allBeta == FALSE){
+			mtext(side = 3, line = -1.5, paste("", LETTERS[s]), adj = 0)
+			if(s == 5) legend(21980, 1.6e14, fill = c(1, grey(0.5)), border = NA, xpd = NA, bty = "n", legend = c("Migratory", "Non-migratory"), ncol = 2)
+		} else {
+			if(i == 1 & s == 5) legend(21980, 1.6e14, fill = c(1, grey(0.5)), border = NA, xpd = NA, bty = "n", legend = c("Migratory", "Non-migratory"), ncol = 2)
+		}
 		
-		if(s == 1) legend("topright", col = cols[c(1:4)], title = "Arresting", lwd = 1.5, legend = c("100%", "50%", "0%", "variable"), bg = "white", xpd = NA)
+		
 	} #  end s
+	
+	if(i == min(I)){
+		u <- par('usr')
+		segments(x0 = u[1] - 0.25*(u[2] - u[1]), x1 = u[1] - 0.25*(u[2] - u[1]), y0 = 5.5*u[4], y1 = 2.3*u[4], xpd = NA)
+		text(u[1] - 0.3*(u[2] - u[1]), mean(c(5.5*u[4], 2.3*u[4])), "Within-host parasite stages", xpd = NA, srt = 90, cex = 1.5)
+		segments(x0 = u[1] - 0.25*(u[2] - u[1]), x1 = u[1] - 0.25*(u[2] - u[1]), y0 = 2*u[4], y1 = 0, xpd = NA)
+		text(u[1] - 0.3*(u[2] - u[1]), u[4], "Free-living parasite stages", xpd = NA, srt = 90, cex = 1.5)
+	}
+	
 } #end i
-
-u <- par('usr')
-segments(x0 = u[1] - 0.25*(u[2] - u[1]), x1 = u[1] - 0.25*(u[2] - u[1]), y0 = 5.5*u[4], y1 = 2.3*u[4], xpd = NA)
-text(u[1] - 0.3*(u[2] - u[1]), mean(c(5.5*u[4], 2.3*u[4])), "Within-host parasite stages", xpd = NA, srt = 90, cex = 1.5)
-segments(x0 = u[1] - 0.25*(u[2] - u[1]), x1 = u[1] - 0.25*(u[2] - u[1]), y0 = 2*u[4], y1 = 0, xpd = NA)
-text(u[1] - 0.3*(u[2] - u[1]), u[4], "Free-living parasite stages", xpd = NA, srt = 90, cex = 1.5)
-
-segments(x0 = as.Date(paste(2100, L4startDOY, sep = "-"), format = "%Y-%j"), x1 = as.Date(paste(2100, L4startDOY, sep = "-"), format = "%Y-%j"), y0 = 0, y1 = 1.6e+14, lty = 3, xpd = NA)
-text(as.Date(paste(2100, L4startDOY, sep = "-"), format = "%Y-%j"), 1.6e+14, pos = 3, "L4 resume", xpd = NA)
-
-# segments(x0 = as.Date(paste(2030, breedDOY, sep = "-"), format = "%Y-%j"), x1 = as.Date(paste(2030, breedDOY, sep = "-"), format = "%Y-%j"), y0 = 0, y1 = 1.6e+14, lty = 3, xpd = NA)
-# text(as.Date(paste(2030, breedDOY, sep = "-"), format = "%Y-%j"), 1.6e+14, pos = 3, "Calving", xpd = NA)
-
-# legend(u[2] - 70, 1.65e+14, col = cols[c(1:4)], title = "Arresting", lwd = 1.5, legend = c("100%", "50%", "0%", "variable"), bg = "white", xpd = NA)
 
 
 ###############################################################################
@@ -171,357 +177,187 @@ for(i in 1:3){
 
 
 
-# pdf(file = "figures/supplement/annualP_allScenarios_zoomed_GT.pdf", width = 8, height = 8, pointsize = 10)
-# # quartz(width = 6.3, height = 5, pointsize = 10)
-# par(mfrow = c(3,3), mar = rep(0, 4), oma = c(5, 6,3,8))
-# for(i in 1:3){ # for each of three levels of transmission
-# 	for(r in 1:3){ # for each climate scenario
-# 		
-# 		# Plot all three inhibition on the same figure using cols[1-3] (red = 100% inhibition)
-# 		plot(1:y, annualSumm[[i, 1, r]][, 1], "n", ylim = c(0, 1e8), yaxt = "n", xaxt = "n")#, ylim = ylims[[1]][[i]]
-# 		for(p in 1:4)	lines(1:y, annualSumm[[i, p, r]][, 1], col = cols[p], lwd = 1.2)
-# 		if(r == 1) axis(side = 2, las = 1) #else axis(side = 2, labels = FALSE)
-# 		if(i == 3) axis(side = 1) #else axis(side = 1, labels = FALSE)
-# 		
-# 		if(i == 1 & r == 1) legend("topleft", col = cols[1], lty = c(1,3), lwd = 1.2, bty = "n", legend = c("Parasite", "Host"))
-# 		
-# 		# # Plot host population over top in dashed line
-# 		par(new = TRUE)
-# 		plot(1:y, annualSumm[[i, 1, r]][, 2], "n", ylim = c(0, 8e7), yaxt = "n", xaxt = "n")
-# 		for(p in 1:4)	lines(1:y, annualSumm[[i, p, r]][, 2], col = cols[p], lty = 3, lwd = 1.2)
-# 
-# 		if(i == 1) mtext(side = 3, line = 1, c("Current", "RCP 2.6", "RCP 8.5")[r])
-# 		
-# 		if(r == 3){
-# 			axis(side = 4, las = 1)
-# 			mtext(side = 4, c(expression(paste("Low ", beta)), expression(paste("Base ", beta)), expression(paste("High ", beta)))[i], line = 7)
-# 		}
-# 		
-# 		# if(r == 3 & i == 1) legend("right", col = cols[1:3], title = "Inhibition", legend = c("100%", "50%", "0%"), bty = "n", lwd = 1.2)
-# 	}
-# 	}
-# mtext(side = 1, "Year in simulation", outer = TRUE, line = 4)
-# mtext(side = 2, "Average annual parasite pressure", outer = TRUE, line = 5)
-# mtext(side = 4, "Total host population size", outer = TRUE, line = 5)
-# 
-# 
-# dev.off()
+#-----------
+# Each arrested scenario in its own plot
+period <- array(NA, dim = c(3, 4, 3))
 
-#------------------------------------------------------------------------------
-# Plot of base transmission under current conditions for main text
-#-----------------------------------------------------------------------------
-# 
-# i <- 2 # Transmission rate scenario (2 = base)
-# r <- 3 # Climate scenario (1 = current)
-# 
-# #--------
-# # Inset plot of all arrested scenarios
-# par(mfrow = c(2,1), mar = c(1,6,1,6), oma = rep(0, 4))
-# plot(1:y, annualSumm[[i, 1, r]][, 1], "n", ylim = c(0, max(c(annualSumm[[2, 1, 1]][, 1], annualSumm[[2, 2, 1]][, 1], annualSumm[[2, 3, 1]][, 1], annualSumm[[2, 4, 1]][, 1]))), yaxt = "n", ylab = "", xlab = "", xaxs = "i", xlim = c(40, 100))
-# axis(side = 2, at = c(0, 0.5e9, 1e9, 1.5e9, 2e9), labels = c(0, 5000, "10,000", "15,000", "20,000"), las = 1)#c(0, expression(0.5%*%10^9), expression(1%*%10^9), expression(1.5%*%10^9), expression(2%*%10^9)), las = 1)
-# for(p in 1:4)	lines(1:y, annualSumm[[i, p, r]][, 1], "o", pch = 19, cex = 0.8, col = cols[p])
-# 
-# par(new = TRUE)
-# plot(1:y, annualSumm[[i, 1, r]][, 2], "n", ylim = c(0, max(c(annualSumm[[2, 1, 1]][, 2], annualSumm[[2, 2, 1]][, 2], annualSumm[[2, 3, 1]][, 2], annualSumm[[2, 4, 1]][, 2]))), yaxt = "n", xaxt = "n", xlab = "", ylab = "", xaxs = "i", xlim = c(40, 100))
-# for(p in 1:4)	lines(1:y, annualSumm[[i, p, r]][, 2], "o", pch = 21, bg = "white", cex = 0.8, col = cols[p], lty = 2)
-# axis(side = 4, las = 1, at = c(0, 4, 8, 12)*10^8, labels = c(0, 400, 800, 1200))
-# 
-# # Inset plot of last 3 arrested scenarios
-# # par(mfrow = c(1,1), mar = c(4,6,2,6), oma = rep(0, 4))
-# plot(1:y, annualSumm[[i, 1, r]][, 1], "n", ylim = c(0, max(c(annualSumm[[2, 2, 1]][, 1], annualSumm[[2, 3, 1]][, 1], annualSumm[[2, 4, 1]][, 1]))), yaxt = "n", ylab = "", xlab = "", xaxs = "i", xlim = c(40, 100))
-# # axis(side = 2, at = c(0, 0.5e9, 1e9, 1.5e9, 2e9), labels = c(0, 5000, "10,000", "15,000", "20,000"), las = 1)#c(0, expression(0.5%*%10^9), expression(1%*%10^9), expression(1.5%*%10^9), expression(2%*%10^9)), las = 1)
-# for(p in 2:4)	lines(1:y, annualSumm[[i, p, r]][, 1], "o", pch = 19, cex = 0.8, col = cols[p])
-# 
-# par(new = TRUE)
-# plot(1:y, annualSumm[[i, 1, r]][, 2], "n", ylim = c(0, max(c(annualSumm[[2, 1, 1]][, 2], annualSumm[[2, 2, 1]][, 2], annualSumm[[2, 3, 1]][, 2], annualSumm[[2, 4, 1]][, 2]))), yaxt = "n", xaxt = "n", xlab = "", ylab = "", xaxs = "i", xlim = c(40, 100))
-# for(p in 1:4)	lines(1:y, annualSumm[[i, p, r]][, 2], "o", pch = 21, bg = "white", cex = 0.8, col = cols[p], lty = 2)
-# axis(side = 4, las = 1, at = c(0, 4, 8, 12)*10^8, labels = c(0, 400, 800, 1200))
-# 
-# 
-# #-----------
-# # Each arrested scenario in its own plot
-# ylimCycles <- array(NA, dim = c(4,2,2))
-# for(p in 1:4){
-# 	ylimCycles[p, 1, ] <- extendrange(annualSumm[[i, p, r]][60:y, 1], f = 0.15)
-# 	ylimCycles[p, 2, ] <- extendrange(annualSumm[[i, p, r]][60:y, 2], f = 0.15)
-# }
-# # ylimCycles[4,1,] <- c(81.5, 82.5)*10^6 
-# # ylimCycles[4,2,] <- c(20.6, 20.9)*10^6
-# 
-# # quartz(width = 4.5, height = 5, pointsize = 10)
-# # pdf(file = "figures/popCycles_GT.pdf", width = 6.8, height = 5, pointsize = 10)
-# y0 <- 40
-# 
-# par(mfrow = c(4,1), mar = c(1,4,1,4), oma = c(3,1,1,1))
-# 
-# for(p in 1:4){
-# 	plot(y0:y, annualSumm[[i, p, r]][y0:y, 1], "o", pch = c(21,22,24,25)[p], col = cols[p], bg = cols[p], cex = 0.8, lwd = 1.2, xaxt = "n", ylab = "", xlab = "", yaxt = "n", ylim = ylimCycles[p,1,])
-# 	if(p > 3) axis(side = 1, at = seq(y0, 100, 20), labels = seq(100 + y0, 200, 20)) else axis(side = 1, at = seq(y0, 100, 20), labels = FALSE)
-# 	
-# 	# axis(side = 2, at = pretty(annualSumm[[i, p, r]][y0:y, 1]), labels = pretty(annualSumm[[i, p, r]][y0:y, 1]*10^-6), las = 1)
-# 	axis(side = 2, at = pretty(ylimCycles[p,1,]), labels = pretty(ylimCycles[p,1,]*10^-6), las = 1)
-# 	
-# 	if(p == 1){
-# 		arrows(x0 = 76, x1 = 94, y0 = max(annualSumm[[i, p, r]][y0:y, 1]), y1 = max(annualSumm[[i, p, r]][y0:y, 1]), length = 0.06, cod = 3, lwd = 1.2)
-# 		text(85, max(annualSumm[[i, p, r]][y0:y, 1]), pos = 1, "18 years")
-# 	
-# 		} else if(p == 2){
-# 		arrows(x0 = 71, x1 = 81, y0 = max(annualSumm[[i, p, r]][y0:y, 1]), y1 = max(annualSumm[[i, p, r]][y0:y, 1]), length = 0.06, cod = 3, lwd = 1.2)
-# 		text(76, max(annualSumm[[i, p, r]][y0:y, 1]), pos = 1, "10 years")
-# 	
-# 		} else if(p == 3){
-# 		arrows(x0 = 73, x1 = 83, y0 = max(annualSumm[[i, p, r]][y0:y, 1]), y1 = max(annualSumm[[i, p, r]][y0:y, 1]), length = 0.06, cod = 3, lwd = 1.2)
-# 		text(78, max(annualSumm[[i, p, r]][y0:y, 1]), pos = 1, "10 years")
-# 	}
-# 	
-# 	par(new = TRUE)
-# 	plot(y0:y, annualSumm[[i, p, r]][y0:y, 2], "o", pch = c(21,22,24,25)[p], col = cols[p], bg = "white", cex = 0.8, lty = 3, yaxt = "n", xaxt = "n", ylim = ylimCycles[p, 2 ,], ylab = "", xlab = "")
-# 	
-# 	# axis(side = 4, at = pretty(annualSumm[[i, p, r]][y0:y, 2]), labels = pretty(annualSumm[[i, p, r]][y0:y, 2]*10^-6), las = 1)
-# 	axis(side = 4, at = pretty(ylimCycles[p,2,]), labels = pretty(ylimCycles[p,2,]*10^-6), las = 1)
-# 	
-# 	if(p == 1){
-# 		arrows(x0 = 80, x1 = 84, y0 = min(annualSumm[[i, p, r]][y0:y, 2]), y1 = min(annualSumm[[i, p, r]][y0:y, 2]), code = 3, length = 0.06, lwd = 1.2)
-# 		text(82, min(annualSumm[[i, p, r]][y0:y, 2]),pos =1, "4 years")
-# 	} else if(p == 2){
-# 		arrows(x0 = 83, x1 = 86, y0 = min(annualSumm[[i, p, r]][y0:y, 2]), y1 = min(annualSumm[[i, p, r]][y0:y, 2]), code = 3, length = 0.06, lwd = 1.2)
-# 		text(84.5, min(annualSumm[[i, p, r]][y0:y, 2]),pos =1, "3 years")
-# 	} else if(p == 3){
-# 		arrows(x0 = 85, x1 = 87, y0 = min(annualSumm[[i, p, r]][y0:y, 2]), y1 = min(annualSumm[[i, p, r]][y0:y, 2]), code = 3, length = 0.06, lwd = 1.2)
-# 		text(86, min(annualSumm[[i, p, r]][y0:y, 2]), pos =1, "2 years")
-# 	}
-# 	
-# if(p == 4) legend("bottomright", pch = c(25, 25), pt.bg = c(cols[4], "white"), lty = c(1, 3), lwd = c(1.2, 1), legend = c("Parasite pressure", "Total hosts"), col = cols[4], bty = "n")
-# 
-# 	mtext(side =3, adj = 0, line = -1.5, paste(" ", LETTERS[p]))
-# 	
-# 	
-# } # end p
-# 
-# mtext(side = 2, outer = TRUE, expression(paste("Annual parasite pressure (parasite", {}%*%{}, "days (host)", {}^-1 %*% 10^-6, ")")), line = -1)
-# mtext(side =4, outer = TRUE, expression(paste("Total host population size (", {}%*%10^-6, ")")), line = -0.5)
-# mtext(side = 1, outer = TRUE, "Year in simulation", line = 2)
-# 
-# dev.off()
+pdf(file = "figures/popCycles_all.pdf", width = 4.5, height = 5, pointsize = 10)
+for(i in 1:3){
+	for(r in 1:3){
+		
+		ylimCycles <- array(NA, dim = c(4,2,2))
+		
+		for(p in 1:4){
+			ylimCycles[p, 1, ] <- extendrange(annualSumm[[i, p, r]][40:y, 1], f = 0.15)
+			ylimCycles[p, 2, ] <- extendrange(annualSumm[[i, p, r]][40:y, 2], f = 0.15)
+		}
+		
+		y0 <- 40
+		
+		# quartz(width = 4.5, height = 5, pointsize = 10)
+		par(mfrow = c(4,1), mar = c(1,4,1,4), oma = c(3,2,1,2))
+		
+		for(p in 1:4){
+			
+			#-------
+			# Parasites
+			
+			y1p <- annualSumm[[i, p, r]][y0:y, 1]
+			y2p <- annualSumm[[i, p, r]][y0:y, 2]
+			
+			plot(y0:y, y1p, "l", lwd = 1.2, xaxt = "n", ylab = "", xlab = "", yaxt = "n", ylim = ylimCycles[p,1,])
+			
+			if(p > 3) axis(side = 1, at = seq(y0, 100, 20), labels = seq(100 + y0, 200, 20)) else axis(side = 1, at = seq(y0, 100, 20), labels = FALSE)
+			
+			axis(side = 2, at = pretty(ylimCycles[p,1,]), labels = pretty(ylimCycles[p,1,]*10^-6), las = 1)
+		
+			
+			if(p < 4){
+				y1Peaks <- tail(c(2:(length(y1p)-1))[which(y1p[2:(length(y1p)-1)] >  y1p[3:length(y1p)] & y1p[2:(length(y1p)-1)] > y1p[1:(length(y1p)-2)])], 2)
+			} else {
+				y1Peaks <- head(c(2:(length(y1p)-1))[which(y1p[2:(length(y1p)-1)] >  y1p[3:length(y1p)] & y1p[2:(length(y1p)-1)] > y1p[1:(length(y1p)-2)])], 2)
+			}
+			segments(x0 = c(y0:y)[y1Peaks], x1 = c(y0:y)[y1Peaks], y0 = y1p[y1Peaks], y1 = max(y1p), lty = 3)
+			arrows(x0 = c(y0:y)[y1Peaks[1]], x1 = c(y0:y)[y1Peaks[2]], y0 = max(y1p), y1 = max(y1p), length = 0.06, cod = 3, lwd = 1.2)
+			text(mean(c(y0:y)[y1Peaks]), max(annualSumm[[i, p, r]][y0:y, 1]), pos = 1, paste(diff(y1Peaks), "years"))
+			
+			# Record period for calculating change
+			period[i, p, r] <- diff(y1Peaks)
+			
+			if(p < 4){
+				y1Trough <- tail(c(2:(length(y1p)-1))[which(y1p[2:(length(y1p)-1)] <  y1p[3:length(y1p)] & y1p[2:(length(y1p)-1)] < y1p[1:(length(y1p)-2)])], 1)
+			} else {
+				y1Trough <- c(2:(length(y1p)-1))[which(y1p[2:(length(y1p)-1)] <  y1p[3:length(y1p)] & y1p[2:(length(y1p)-1)] < y1p[1:(length(y1p)-2)])][2]
+			}
+			segments(x0 = c(y0:y)[y1Trough], x1 = c(y0:y)[y1Trough], y0 = y1p[y1Trough], y1 = min(y1p), lty = 3)
+			
+			#-------
+			# Hosts
+			par(new = TRUE)
+			
+			
+			plot(y0:y, y2p, "l", col = "#00000050", yaxt = "n", xaxt = "n", ylim = ylimCycles[p, 2 ,], ylab = "", xlab = "")
+			
+			axis(side = 4, at = pretty(ylimCycles[p,2,]), labels = pretty(ylimCycles[p,2,]*10^-6), las = 1, col = grey(0.5))
+			
+			
+			y2Trough <- c(2:(length(y2p)-1))[which(y2p[2:(length(y2p)-1)] <  y2p[3:length(y2p)] & y2p[2:(length(y2p)-1)] < y2p[1:(length(y2p)-2)])]
+			y2Trough <- y2Trough[which(abs(y2Trough-y1Trough) == min(abs(y2Trough-y1Trough)))]
+			
+			segments(x0 = c(y0:y)[y2Trough], x1 = c(y0:y)[y2Trough], y0 = y2p[y2Trough], y1 = min(y2p), lty = 3, col = grey(0.5))
+			arrows(x0 = c(y0:y)[y1Trough], x1 = c(y0:y)[y2Trough], y0 = min(y2p), y1 = min(y2p), code = 3, length = 0.06, lwd = 1.2)
+				
+			text(mean(c(y0:y)[c(y1Trough, y2Trough)]), min(annualSumm[[i, p, r]][y0:y, 2]),pos =1, paste(y1Trough[1]- y2Trough[1], " years"))
+			
+			if(p == 4) legend("bottomright", lwd = c(1.2, 1), legend = c("Parasite pressure", "Total hosts"), col = c(1, grey(0.5)), bty = "n")
+			
+			mtext(side =3, adj = 0, line = -1.5, paste(" ", LETTERS[p]))
+			
+			
+		} # end p
+		
+		mtext(side = 2, outer = TRUE, expression(paste("Annual parasite pressure (parasite", {}%*%{}, "days (host)", {}^-1 %*% 10^-6, ")")))
+		mtext(side =4, outer = TRUE, expression(paste("Total host population size (", {}%*%10^-6, ")")), col = grey(0.5))
+		mtext(side = 1, outer = TRUE, "Year in simulation", line = 2)
+		mtext(side = 3, outer = TRUE, paste(c("Low transmission", "Base transmission", "High transmission")[i], c("Current", "RCP 2.6", "RCP 8.5")[r], sep = ": "))
 
+	} # end r
+} # end i
+
+dev.off()
 
 ###############################################################################
 # For climate scenarios, summarize 
 # (1) average parasite burdens in last 80 years
 # (2) average host population in the last 80 years.
 ###############################################################################
-boot <- function(x){
-	bootX <- apply(matrix(sample(x, length(x) * 1000, replace = TRUE), nrow = 1000), 1, mean)
-	return(c(quantile(bootX, 0.025), mean(bootX), quantile(bootX, 0.975)))
-}
 
-avg80 <- array(NA, dim = c(3, 4, 3, 2, 3))
-for(i in 1:3){
+
+avg <- array(NA, dim = c(3, 4, 3, 2, 2))
+for(i in 1:3){ # For each transmission scenario
 	for(r in 1:3){
 		for(p in 1:4){
 			for(m in 1:2){
-				avg80[i, p, r, m, ] <- boot(annualSumm[[i, p, r]][51:100, m])
+				irmp <- annualSumm[[i, p, r]][(100 - period[i, p, r] + 1):100, m]*10^-6
+				
+				avg[i, p, r, m, 1] <- mean(irmp)
+				avg[i, p, r, m, 2] <- sd(irmp)
 			}
 		}
 	}
 }
 
+avg[2, ,1, ,]
 
-# Rather than looking at last 80 years, maybe look at the last cycle (18 year, 10 years, 1 year)
-cycleYrs <- c(18, 10, 10, 1)
-
-avg80 <- array(NA, dim = c(3, 4, 3, 2, 3))
 for(i in 1:3){
-	for(r in 1:3){
-		for(p in 1:4){
-			for(m in 1:2){
-				avg80[i, p, r, m, ] <- boot(annualSumm[[i, p, r]][c((100 - cycleYrs[p] + 1):100), m])
-			}
-		}
-	}
+	avgTable <- rbind(
+		
+		scenario1 = c(paste(round(avg[i, 1, c(1:3), 1, 1], 1), " (", round(avg[i, 1, c(1:3), 1, 2], 1), ")", sep = ""), 
+									paste(round(avg[i, 1, c(1:3), 2, 1], 1), " (", round(avg[i, 1, c(1:3), 2, 2], 1), ")", sep = "")),
+		
+		scenario2 = c(paste(round(avg[i, 2, c(1:3), 1, 1], 2), " (", round(avg[i, 2, c(1:3), 1, 2], 2), ")", sep = ""), 
+									paste(round(avg[i, 2, c(1:3), 2, 1], 2), " (", round(avg[i, 2, c(1:3), 2, 2], 2), ")", sep = "")),
+		
+		scenario3 = c(paste(round(avg[i, 3, c(1:3), 1, 1], 2), " (", round(avg[i, 3, c(1:3), 1, 2], 2), ")", sep = ""), 
+									paste(round(avg[i, 3, c(1:3), 2, 1], 2), " (", round(avg[i, 3, c(1:3), 2, 2], 2), ")", sep = "")),
+		
+		scenario4 = c(paste(round(avg[i, 4, c(1:3), 1, 1], 1), " (", round(avg[i, 4, c(1:3), 1, 2], 1), ")", sep = ""), 
+									paste(round(avg[i, 4, c(1:3), 2, 1], 2), " (", round(avg[i, 4, c(1:3), 2, 2], 2), ")", sep = ""))
+		
+	)
+	
+	write.csv(avgTable, paste0("figures/CCoutput_", c("lowBeta", "baseBeta", "highBeta")[i], ".csv"))
 }
 
+
+# Calculate percent change
+
+percChange <- array(NA, dim = c(3, 4, 2, 2), dimnames = list(c("lowBeta", "baseBeta", "highBeta"), paste0("Scenario", c(1:4)), c("RCP2.6", "RCP8.5"), c("Parasite" ,"Host")))
+for(i in 1:3){
+	for(p in 1:4){
+		for(r in 1:2){
+			for(m in 1:2){
+				percChange[i, p, r, m] <- (avg[i, p, r + 1, m, 1] - avg[i, p, 1, m, 1])/avg[i, p, 1, m, 1]*100
+			}}}}
+
+percChange[2, , , 1]
 
 # Plot as a percentage of the mean in current scenarios
-# quartz(width = 4.5, height = 4, pointsize = 10)
-# ylims2 <- matrix(c(0.9, 1.15, 0.85, 1.1), 2, 2)
-ylims2 <- matrix(c(-0.1, 0.12, -0.15, 0.05)*100, 2, 2)
-
-quartz(width = 4.5, height = 4, pointsize = 10)
-for(i in 1:3){
-	# if(i == 2) pdf(file = "figures/climateChangeEffects.pdf", width = 3.2, height = 4, pointsize = 10)	
-	# if(i == 1) pdf(file = "figures/supplement/climateChangeEffects_lowBeta.pdf", width = 3.2, height = 4, pointsize = 10)	
-	# if(i == 3) pdf(file = "figures/supplement/climateChangeEffects_highBeta.pdf", width = 3.2, height = 4, pointsize = 10)	
-	
-	par(mfrow = c(2,1), mar = c(2,5,2,1), oma = c(2, 0, 0, 6))
-	for(m in 1:2){
-		plot(1:3, avg80[i, 1, , m, 2], "n", ylim = ylims2[, m], xlim = c(0.5, 3.5), xaxs = "i", xaxt = "n", las = 1, xlab = "", ylab = "", yaxt = "n")
-		axis(side = 2, at = seq(-10, 10, 5), labels = paste(seq(-10, 10, 5), "%", sep = ""), las = 1)
-		axis(side = 1, at = c(0.5, 1.5, 2.5, 3.5), labels = FALSE)
-		axis(side = 1, at = c(1, 2, 3), labels = c("Current", "RCP 2.6", "RCP 8.5"), tck = 0)
-		abline(h = 0)
-		abline(v = c(1.5, 2.5))
-		for(p in 1:4){
-			segments(x0 = 1:3 + c(-0.3, -0.1, 0.1, 0.3)[p], x1 = 1:3 + c(-0.3, -0.1, 0.1, 0.3)[p], y0 = (avg80[i, p, , m, 1] - avg80[i, p, 1, m, 2])/avg80[i, p, 1, m, 2]*100, y1 = (avg80[i, p, , m, 3] - avg80[i, p, 1, m, 2])/avg80[i, p, 1, m, 2]*100, col = cols2[p], lwd = 2)
-			points(1:3 + c(-0.3, -0.1, 0.1, 0.3)[p], (avg80[i, p, , m, 2] - avg80[i, p, 1, m, 2])/avg80[i, p, 1, m, 2]*100, pch = c(21,22,24,25)[p], col = cols[p], bg = cols2[p])
-		}
-		mtext(side = 3, adj = 0, line = 0, LETTERS[m])
-		mtext(side = 2, c("Change in parasite burdens", "Change in host pop'n")[m], line = 3)
-	}
-	mtext(side = 1, "Climate scenario", line = 3)
-	legend(3.8, 42, pch = c(21,22,24,25), col = cols[1:4], pt.bg = cols2[1:4], title = "Arrested\ndevelopment", legend = c("100%", "50%", "0%", "variable"), bty = "n", cex = 0.8, pt.cex = 1.0, xpd= NA)
-	
-	dev.off()
-}
-#------------------------------------------------------------------------------
-# Does the timing of infection differ and is that why we see declines in host
-# abundance with no significant increase in parasite populations?
-#------------------------------------------------------------------------------
-# Look at relative summary in last year of simulation
-
-year2plot <- 90 #last 80 years in simulation
-
-annual100 <- array(NA, dim = c(3, 4, 3, 6, 365))
-for(i in 1:3){ # Three different transmission parameters
-	for(p in 1:4){ # for each level of ppnInhibit (1, 0.5, 0)
-		for(r in 1:3){ # for current recp26, rcp 85
-			V.ipr <- V[[i,p,r]][, , which(timeDat$year[timeDat$year > 80] == year2plot)]
-			for(j in 1:365){
-				annual100[i, p, r, 1, j] <- sum(V.ipr[c('P_mov', 'P_stat'), , j]) / sum(V.ipr[c('adult_mov', 'adult_stat'), , j])
-				annual100[i, p, r, 2, j] <- sum(V.ipr[c('L4A_mov', 'L4A_stat'), , j]) / sum(V.ipr[c('adult_mov', 'adult_stat'), , j])
-				annual100[i, p, r, 3, j] <- sum(V.ipr[c('L4_mov', 'L4_stat'), , j]) / sum(V.ipr[c('adult_mov', 'adult_stat'), , j])
-				annual100[i, p, r, 4, j] <- sum(V.ipr['L0', , j])
-				annual100[i, p, r, 5, j] <- sum(V.ipr['L3', , j])
-				annual100[i, p, r, 6, j] <- sum(V.ipr[c('adult_mov', 'adult_stat', 'yearling_mov', 'yearling_stat', 'calf_mov', "calf_stat"), , j])
-			} # end day j
-			
-			
-		}}
-} # end m
-
-
-#-----
-# Plot 
-#-----
-xDate <- as.Date(paste(2100, c(1:365), sep = "-"), format = "%Y-%j") 
-stages <- c("P", "L4A", "L4", "L0", "L3", "Hosts")
-arrestScenario <- c("100% arrest", "50% arrest", "0% arrest", "variable")
 i <- 2
-p <- 2
-# quartz()
-par(mfrow = c(4,1), mar = c(1,5,1,1), oma = c(4,0,2,0))
-for(s in c(3,1,5,2)){
-	plot(xDate[seq(2, 365, 2)], annual100[i, p, 1, s, seq(2, 365, 2)], "l", col= 1, ylim = extendrange(annual100[i, p, 1:3, s, ], f = 0.05), ylab = stages[s], xlab = "")
-	lines(xDate[seq(2, 365, 2)], annual100[i, p, 2, s, seq(2, 365, 2)], col= 4)
-	lines(xDate[seq(2, 365, 2)], annual100[i, p, 3, s, seq(2, 365, 2)], col= 2)
-	if(s == 3) mtext(side = 3, arrestScenario[p])
-	abline(v = as.Date(paste("2100", breedDOY - 240 + 365, sep = "-"), format = "%Y-%j"))
-	# points(rep(as.Date(paste("2100", breedDOY - 240 + 365, sep = "-"), format = "%Y-%j"), 2))
+quartz(width = 6.3, height = 2.8, pointsize = 10)
+par(mfrow = c(1,2), mar = c(4, 2, 2, 1), oma= c(0, 2, 0, 5))
+
+# Parasite
+plot(1:4, percChange[i, , 1, 1], "n", ylim = extendrange(percChange[i, , , 1], f = 0.2), las = 1, xlim = c(0.5, 4.5), ylab = "", xlab = "Scenario")
+mtext(side = 2, "Percent change", line = 3)
+abline(h = 0)
+
+for(r in 1:2){
+	points(1:4, percChange[i, , r, 1], col = c(4,2)[r], pch = 21, bg = c("#2297E620", "#DF536B80")[r])
 }
+mtext(side = 3, adj = 0, line = 0.5, "A) Annual parasite pressure")
 
-
-
-
-par(mfrow = c(2,1))
-s <- 1
-plot(xDate, annual100[i, p, 1, s, ], "l", col= 1, ylim = extendrange(annual100[i, p, 1, s, ], f = 0.05))
-par(new = TRUE)
-plot(xDate, annual100[i, p, 2, s, ], "l", col= cols[4], ylim = extendrange(annual100[i, p, 2, s, ], f = 0.05))
-par(new = TRUE)
-plot(xDate, annual100[i, p, 3, s, ], "l", col= cols[1], ylim = extendrange(annual100[i, p, 3, s, ], f = 0.05))
-abline(v = as.Date(paste("2100", breedDOY - 240 + 365, sep = "-"), format = "%Y-%j"))
-
-
-preg <- cbind(seq(0, 60000, 100), 0.8 - 1/(1 + exp(7.025 - 0.000328*seq(0, 60000, 100))))
-
-p <- 2
-
-
-for(s in c(1,6)){
-	plot(xDate, annual100[i, p, 1, s, ], "l", col= 1, ylim = extendrange(annual100[i, p, 1:3, s, ], f = 0.05))
-	for(r in 2:3) lines(xDate, annual100[i, p, r, s, ], "l", col= cols[c(4,1)[r-1]])
-	abline(v = as.Date(paste("2100", breedDOY - 240 + 365, sep = "-"), format = "%Y-%j"), lty = 3)
-	abline(v = as.Date(paste("2100", breedDOY, sep = "-"), format = "%Y-%j"), lty = 3)
-	if(s == 1) lines(preg[, 2]/max(preg[,2]) * 180))
+# Host
+plot(1:4, percChange[i, , 1, 2], "n", ylim = extendrange(percChange[i, , , 2], f = 0.2), las = 1, xlim = c(0.5, 4.5), ylab = "", xlab = "Scenario")
+abline(h = 0)
+for(r in 1:2){
+	points(1:4, percChange[i, , r, 2], col = c(4,2)[r], pch = 21, bg = c("#2297E620", "#DF536B80")[r])
 }
+mtext(side = 3, adj = 0, line = 0.5, "B) Total host pop'n")
 
-
-
-
-# Look at annual temp and parameters under those scenarios
-temp <- seq(-25, 40, 0.1)
-ymax <- c(0.6, 0.03, 0.1)
-
-mu0 <- cbind(predict.mu0(tempDat$current), predict.mu0(tempDat$rcp26), predict.mu0(tempDat$rcp85))
-mu3 <- cbind(predict.mu3(tempDat$current), predict.mu3(tempDat$rcp26), predict.mu3(tempDat$rcp85))
-rho <- cbind(predict.rho0(tempDat$current), predict.rho0(tempDat$rcp26), predict.rho0(tempDat$rcp85))
-
-par(mfcol =c(3,2), oma = c(3, 4, 1, 0), mar = c(2,2,1,1))
-plot(temp, predict.mu0(temp), "l", ylim = c(0, ymax[1]), ylab = "Pre-infective mortality", lwd = 2, las =1, col = grey(0.6))
-
-axis(side = 1, labels = FALSE)
-plot(temp, predict.mu3(temp), "l", ylim = c(0, ymax[2]), ylab = "Infective mortality", lwd = 2, las =1, col = grey(0.6))
-
-plot(temp, predict.rho0(temp), "l", ylim = c(0, ymax[3]), ylab = "Development", lwd = 2, las =1, col = grey(0.6))
-
-plot(xDate, mu0[, 1], "l", ylim = c(0, ymax[1]), ylab = "", lwd = 2, las =1)
-lines(xDate, mu0[, 2], col = 4, lwd = 2)
-lines(xDate, mu0[, 3], col = 2, lwd = 2)
-
-plot(xDate, mu3[, 1], "l", ylim = c(0, ymax[2]), ylab = "", lwd = 2, las =1)
-lines(xDate, mu3[, 2], col = 4, lwd = 2)
-lines(xDate, mu3[, 3], col = 2, lwd = 2)
-
-plot(xDate, rho[, 1], "l", ylim = c(0, ymax[3]), ylab = "", lwd = 2, las =1)
-lines(xDate, rho[, 2], col = 4, lwd = 2)
-lines(xDate, rho[, 3], col = 2, lwd = 2)
-
-
-#################################################################################
-# Rather than looking at relative, look at absolute changes
-#################################################################################
-
-# Look at change in population from first 20 year to last 20 years for each scenario
-i <- 2 # Use base transmission
-
-avgDiff <- array(NA, dim = c(4, 3, 2, 2), dimnames = list(c("100% arrest", "50% arrest", "0% arrest", "variable"), c("current", "rcp26", "rcp85"), c("P", "H"), c("first20", "last20")))
-pChange <- array(NA, dim = c(4, 3, 2), dimnames = list(c("100% arrest", "50% arrest", "0% arrest", "variable"), c("current", "rcp26", "rcp85"), c("P", "H")))
-for(r in 1:3){
-	for(p in 1:4){
-		for(m in 1:2){
-			avgDiff[p, r, m, 1] <- boot(annualSumm[[i, p, r]][26:45, m])[2]
-			avgDiff[p, r, m, 2] <- boot(annualSumm[[i, p, r]][81:100, m])[2]
-			pChange[p, r, m] <- (avgDiff[p, r, m, 2] - avgDiff[p, r, m, 1])/avgDiff[p, r, m, 1]
-		}
-	}
-}
-
-# Plot
-par(mfrow = c(2,1), mar = c(2,5,2,1), oma = c(2, 0, 0, 6))
-for(m in 1:2){
-	plot(1:3, pChange[1, , m], ylim = range(pChange[, ,m]), "n", xlim = c(0.5, 3.5), xaxs = "i", xaxt = "n", las = 1, xlab = "", ylab = "")
-	axis(side = 1, at = c(0.5, 1.5, 2.5, 3.5), labels = FALSE)
-	axis(side = 1, at = c(1, 2, 3), labels = c("Current", "RCP 2.6", "RCP 8.5"), tck = 0)
-	abline(h = 0)
-	abline(v = c(1.5, 2.5))
-	for(p in 1:4){
-		points(1:3 + c(-0.3, -0.1, 0.1, 0.3)[p], pChange[p, , m], pch = c(21,22,24,25)[p], col = cols[p], bg = cols2[p])
-	}
-	mtext(side = 3, adj = 0, line = 0, LETTERS[m])
-	mtext(side = 2, c("Change in parasite burdens", "Change in host pop'n")[m], line = 3)
-}
-mtext(side = 1, "Climate scenario", line = 3)
-legend(3.8, 42, pch = c(21,22,24,25), col = cols[1:4], pt.bg = cols2[1:4], title = "Arrested\ndevelopment", legend = c("100%", "50%", "0%", "variable"), bty = "n", cex = 0.8, pt.cex = 1.0, xpd= NA)
+legend(4.8, 5.5, pch = 21, col = c(4,2), pt.bg = c("#2297E620", "#DF536B80"), c("RCP 2.6", "RCP 8.5"), xpd = NA, bty = "n")
+mtext(side = 3, line = 1, outer=TRUE, c("Low transmission", "Base transmission", "High transmission")[i])
 
 #################################################################################
 # Uptake rate over space and time in year 100
 #################################################################################
+V <- readRDS(paste0("simulations/output/V_baseBeta_migPath", N, ".rds"))
+
 x.ind <- seq(300, 600, 1)
 t <- seq(120, 300, 1)
 t.ind <- which(timeDat$DOY[which(timeDat$year > 80)] %in% t & timeDat$year[which(timeDat$year > 80)] == 100)
 
-library(RColorBrewer)
-colUptake <- brewer.ylorbr(100)
+colUptake <- colorRampPalette(c("white", 2, 1))(n = 100)
 
 V.pr <- array(NA, dim = c(4, 3, length(x.ind), length(t)))
 for(p in 1:4){
@@ -533,8 +369,14 @@ for(p in 1:4){
 tDate <- as.Date(paste("2001", c(6:10), "01", sep = "-"), format = "%Y-%m-%d")
 tDOY <- as.numeric(strftime(tDate, format = "%j"))
 
-quartz(width = 6.3, height = 5, pointsize = 10)
-par(mfrow = c(4,3), mar = c(1, 0, 0, 0), oma = c(3,5,2,7))
+yTicks <- list(c(0, 75e4, 150e4, 225e4, 300e4),
+								c(0, 75, 150, 300),
+								c(0, 35, 70, 105, 140),
+								c(0, 7500, 15000, 22500))
+	
+# quartz(width = 6.3, height = 5.5, pointsize = 10)
+png(file = "figures/uptakeRate_baseBeta_migPath6.png", width = 6.3*150, height = 5.5*150, pointsize = 10, res = 150)
+par(mfrow = c(4,3), mar = c(1, 0, 0, 0), oma = c(3,5,4,7))
 
 for(p in 1:4){
 	uptakeBreaks <- seq(0, max(V.pr[p, , ,])*0.5, length.out = 100)
@@ -543,27 +385,317 @@ for(p in 1:4){
 	for(r in 1:3){
 		
 		plot(rep(x.ind, length(t)), rep(t, each = length(x.ind)), col = colUptake[findInterval(V.pr[p, r, , ], uptakeBreaks)], pch = 15, xaxs = "i", yaxs = "i", xlab = "", ylab = "", yaxt = "n", xaxt = "n", cex = 0.2)
-		# if(r == 1) axis(side = 2, las = 1)
-		if(r == 1) axis(side = 2, at = tDOY, labels = month.abb[c(6:10)], las= 1)
+		
+		# abline(h = breedDOY, lty = 3)
+		abline(h = tDOY, col = "#00000040", lwd = 0.8)
+		abline(v = seq(650, 1200, 50)/2, col = "#00000040", lwd = 0.8)
+		
+		if(r == 1){
+			axis(side = 2, at = tDOY, labels = month.abb[c(6:10)], las= 1)
+			mtext(side = 3, adj = 0, line = -1.5, paste0("  ", LETTERS[p]))
+		}
 		if(p == 4) axis(side = 1, at = seq(350, 550, 100), labels = seq(350, 550, 100)*2)
 		
-		if(r == 3){
-			# polygon(x = c(630, 630, 650, 650), y = c(110, 290, 290, 110), border = NA)
-			for(i in seq(1, 100, 2)){
-				points(c(631:635), rep(seq(120, 290, length.out = 100)[i], 5), pch = 15, cex = 0.5, col = colUptake[i], xpd = NA)
-			}
-			for(i in c(25, 50, 75, 100)){
-				points(632.5, seq(120, 290, length.out = 100)[i], pch = "-", xpd = NA)
-				text(635, seq(120, 290, length.out = 100)[i], pos = 4, round(uptakeBreaks[i]), xpd = NA)
-			}
+		if(p == 1){
+			mtext(side = 3, c("Current", "RCP 2.6", "RCP 8.5")[r], line = 1)
 		}
+	} # end r
+	
+	for(i in seq(1, 100, 2)){
+		points(c(631:635), rep(seq(120, 290, length.out = 100)[i], 5), pch = 15, cex = 0.5, col = colUptake[i], xpd = NA)
+	}
+	
+	for(j in 1:length(yTicks[[p]])){
+		segments(x0 = 631, x1 = 640, y0 = seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)] , y1 = seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)], xpd = NA)
+		text(640, seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)], pos = 4, yTicks[[p]][j], xpd = NA)
+	}
+	 
 		
-		if(r == 1) mtext(side = 3, adj = 0, line = -1.5, paste0("  ", LETTERS[p]))
 		
-		abline(h = breedDOY, lty = 3)
-		
-		
-	}}
+	}
 
 mtext(side = 1, "Distance along migration (km)", outer = TRUE, line = 2)
-mtext(side = 3, outer = TRUE, "Parasite uptake rate per host per day", line = 0.5)
+# mtext(side = 3, outer = TRUE, "Parasite uptake rate per host per day", line = 0.5)
+text(640, 935, "Parasite\nuptake", xpd = NA)
+
+dev.off()
+
+#------------------------------------------------------------------------------
+# Difference in uptake rate?
+#------------------------------------------------------------------------------
+
+Vdiff <- array(NA, dim = c(4, 2, length(x.ind), length(t)))
+for(p in 1:4){
+	for(r in 1:2){
+		Vdiff[p, r, , ] <- (V[[p, r + 1]][15, x.ind, t.ind] - V[[p, 1]][15, x.ind, t.ind])
+	}
+}
+
+yTicks <- list(c(-2e6, -1e6, 0, 1e6, 2e6),
+							 c(0, 100, 200, 300),
+							 c(-10, 0, 10, 20),
+							 c(-4000, 0, 4000, 8000, 12000, 16000))
+
+#quartz(width = 4.5, height = 5.5, pointsize = 10)
+png(file = "figures/uptakeRateChange_baseBeta_migPath6.png", width = 4.5*150, height = 5.5*150, pointsize = 10, res = 150)
+
+par(mfrow = c(4,2), mar = c(1, 0, 0, 0), oma = c(3,5,4,7))
+
+for(p in 1:4){
+	uptakeBreaks <- seq(min(Vdiff[p, r, ,]), max(Vdiff[p, r, ,]), length.out = 100)
+	colUptake <- c(colorRampPalette(c(4,"white"))(n = sum(uptakeBreaks < 0)), colorRampPalette(c("white", 2))(n = sum(uptakeBreaks > 0)))
+	for(r in 1:2){
+		
+		plot(rep(x.ind, length(t)), rep(t, each = length(x.ind)), col = colUptake[findInterval(Vdiff[p, r, , ], uptakeBreaks)], pch = 15, xaxs = "i", yaxs = "i", xlab = "", ylab = "", yaxt = "n", xaxt = "n", cex = 0.3)
+		
+		# abline(h = breedDOY, lty = 3)
+		abline(h = tDOY, col = "#00000040", lwd = 0.8)
+		abline(v = seq(650, 1200, 50)/2, col = "#00000040", lwd = 0.8)
+		
+		if(r == 1){
+			axis(side = 2, at = tDOY, labels = month.abb[c(6:10)], las= 1)
+			# mtext(side = 3, adj = 0, line = -1.5, paste0("  ", LETTERS[p]))
+		}
+		if(p == 4) axis(side = 1, at = seq(350, 550, 100), labels = seq(350, 550, 100)*2)
+		
+		if(p == 1){
+			mtext(side = 3, c("RCP 2.6", "RCP 8.5")[r], line = 1)
+		}
+	} # end r
+	
+	for(i in seq(1, 100, 2)){
+		points(c(631:635), rep(seq(120, 290, length.out = 100)[i], 5), pch = 15, cex = 0.5, col = colUptake[i], xpd = NA)
+	}
+	
+	for(j in 1:length(yTicks[[p]])){
+		segments(x0 = 631, x1 = 640, y0 = seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)] , y1 = seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)], xpd = NA)
+		text(640, seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)], pos = 4, yTicks[[p]][j], xpd = NA)
+	}
+	
+	
+	
+}
+
+mtext(side = 1, "Distance along migration (km)", outer = TRUE, line = 2)
+# mtext(side = 3, outer = TRUE, "Parasite uptake rate per host per day", line = 0.5)
+text(640, 935, "Change in\nuptake", xpd = NA)
+
+dev.off()
+
+#------------------------------------------------------------------------------
+# Current uptake only
+#------------------------------------------------------------------------------
+
+yTicks <- list(c(0, 75e4, 150e4, 225e4, 300e4),
+							 c(0, 75, 150, 300),
+							 c(0, 35, 70, 105, 140),
+							 c(0, 7500, 15000, 22500))
+
+# quartz(width = 3, height = 5.5, pointsize = 10)
+png(file = "figures/uptakeRateCurrent_baseBeta_migPath6.png", width = 3*150, height = 5.5*150, pointsize = 10, res = 150)
+par(mfrow = c(4,1), mar = c(1, 0, 0, 0), oma = c(3,5,4,7))
+colUptake <- colorRampPalette(c("white", 1))(n = 100)
+
+for(p in 1:4){
+	uptakeBreaks <- seq(0, max(V.pr[p, , ,])*0.5, length.out = 100)
+	r <- 1
+		
+		plot(rep(x.ind, length(t)), rep(t, each = length(x.ind)), col = colUptake[findInterval(V.pr[p, r, , ], uptakeBreaks)], pch = 15, xaxs = "i", yaxs = "i", xlab = "", ylab = "", yaxt = "n", xaxt = "n", cex = 0.3)
+		
+		abline(h = tDOY, col = "#00000040", lwd = 0.8)
+		abline(v = seq(650, 1200, 50)/2, col = "#00000040", lwd = 0.8)
+		
+		axis(side = 2, at = tDOY, labels = month.abb[c(6:10)], las= 1)
+		mtext(side = 3, adj = 0, line = -1.5, paste0("  ", LETTERS[p]))
+		
+		if(p == 4) axis(side = 1, at = seq(350, 550, 100), labels = seq(350, 550, 100)*2)
+		
+		if(p == 1){
+			mtext(side = 3, c("Current", "RCP 2.6", "RCP 8.5")[r], line = 1)
+		}
+	
+	for(i in seq(1, 100, 2)){
+		points(c(631:635), rep(seq(120, 290, length.out = 100)[i], 5), pch = 15, cex = 0.5, col = colUptake[i], xpd = NA)
+	}
+	
+	for(j in 1:length(yTicks[[p]])){
+		segments(x0 = 631, x1 = 640, y0 = seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)] , y1 = seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)], xpd = NA)
+		text(640, seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)], pos = 4, yTicks[[p]][j], xpd = NA)
+	}
+	
+	
+	
+}
+
+mtext(side = 1, "Distance along migration (km)", outer = TRUE, line = 2)
+# mtext(side = 3, outer = TRUE, "Parasite uptake rate per host per day", line = 0.5)
+text(640, 935, "Parasite\nuptake", xpd = NA)
+
+dev.off()
+
+#------------------------------------------------------------------------------
+# Within-host adult parasites
+#------------------------------------------------------------------------------
+colUptake <- colorRampPalette(c("white", 1))(n = 100)
+
+V.P <- array(NA, dim = c(4, 3, length(x.ind), length(t)))
+for(p in 1:4){
+	for(r in 1:3){
+		V.P[p, r, , ] <- V[[p, r]]["P_mov", x.ind, t.ind] + V[[p, r]]["P_stat", x.ind, t.ind]
+	}
+}
+
+yTicks <- list(c(0, 75e4, 150e4, 225e4, 300e4),
+							 c(0, 75, 150, 300),
+							 c(0, 35, 70, 105, 140),
+							 c(0, 7500, 15000, 22500))
+
+# quartz(width = 6.3, height = 5.5, pointsize = 10)
+png(file = "figures/uptakeRate_baseBeta_migPath6.png", width = 6.3*150, height = 5.5*150, pointsize = 10, res = 150)
+par(mfrow = c(4,3), mar = c(1, 0, 0, 0), oma = c(3,5,4,7))
+
+for(p in 1:4){
+	uptakeBreaks <- seq(0, max(V.P[p, , ,])*0.5, length.out = 100)
+	# uptakeBreaks <- seq(0, c(100000, 300, 150, 25000)[p], length.out = 100)
+	
+	for(r in 1:3){
+		
+		plot(rep(x.ind, length(t)), rep(t, each = length(x.ind)), col = colUptake[findInterval(V.P[p, r, , ], uptakeBreaks)], pch = 15, xaxs = "i", yaxs = "i", xlab = "", ylab = "", yaxt = "n", xaxt = "n", cex = 0.2)
+		
+		# abline(h = breedDOY, lty = 3)
+		abline(h = tDOY, col = "#00000040", lwd = 0.8)
+		abline(v = seq(650, 1200, 50)/2, col = "#00000040", lwd = 0.8)
+		
+		if(r == 1){
+			axis(side = 2, at = tDOY, labels = month.abb[c(6:10)], las= 1)
+			mtext(side = 3, adj = 0, line = -1.5, paste0("  ", LETTERS[p]))
+		}
+		if(p == 4) axis(side = 1, at = seq(350, 550, 100), labels = seq(350, 550, 100)*2)
+		
+		if(p == 1){
+			mtext(side = 3, c("Current", "RCP 2.6", "RCP 8.5")[r], line = 1)
+		}
+		
+		abline(h = breedDOY - 240 + 360, col = 2, lty = 3)
+	} # end r
+	
+	for(i in seq(1, 100, 2)){
+		points(c(631:635), rep(seq(120, 290, length.out = 100)[i], 5), pch = 15, cex = 0.5, col = colUptake[i], xpd = NA)
+	}
+	
+	# for(j in 1:length(yTicks[[p]])){
+	# 	segments(x0 = 631, x1 = 640, y0 = seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)] , y1 = seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)], xpd = NA)
+	# 	text(640, seq(120, 290, length.out = 100)[findInterval(yTicks[[p]][j], uptakeBreaks)], pos = 4, yTicks[[p]][j], xpd = NA)
+	# }
+	
+	
+	
+}
+
+mtext(side = 1, "Distance along migration (km)", outer = TRUE, line = 2)
+# mtext(side = 3, outer = TRUE, "Parasite uptake rate per host per day", line = 0.5)
+text(640, 935, "Parasite\nuptake", xpd = NA)
+
+dev.off()
+
+#################################################################################
+# Chnage in pre-infective survival
+#################################################################################
+allTemps <- readRDS("tempData/migRouteOutput/allTemps_migPath6.rds")
+t <- 1:365
+xSelected <- 1000
+
+params <- array(NA, dim = c(4,3, 365))
+for(r in 1:3){
+	params[1, r, ] <- predict.mu0(allTemps[[r]][t, xSelected])
+	params[2, r, ] <- predict.rho0(allTemps[[r]][t, xSelected])
+	params[3, r, ] <- exp(- predict.mu0(allTemps[[r]][t, xSelected])*(1/predict.rho0(allTemps[[r]][t, xSelected])))
+	params[4, r, ] <- predict.mu3(allTemps[[r]][t, xSelected])
+	
+}
+
+quartz(width = 6.3, height = 5, pointsize = 10)
+par(mfrow = c(2, 2), mar = c(3,4,2,1), oma = c(0, 2, 0, 0))
+
+for(j in 1:4){
+	
+	plot(xDate, params[j, 1, ], "n", ylim = range(params[j, , ]), xlab = "", ylab = "", las = 1)
+	for(r in 1:3) lines(xDate, params[j, r, ], col = c(1,4,2)[r])
+
+	if(j == 1) legend("topright", lwd = 1, col = c(1,4,2), c("Current", "RCP 2.6", "RCP 8.5"), bty = "n")
+	mtext(side = 3, line = 0.5, adj = 0, paste0(LETTERS[j], ") ", c("Pre-infective mortality", "Development", "Proportion surviving to infective", "Infective mortality")[j]))
+	}
+mtext(side= 2, outer = TRUE, "Parameter value")
+
+
+# Plot burdens in fall breed
+p <- 1
+Pfall <- rbind(V[[p,1]]["P_mov", , max(which(timeDat$DOY[timeDat$year > 80] == (breedDOY - 240 + 365)))] + V[[p, 1]]["P_stat", , max(which(timeDat$DOY[timeDat$year > 80] == (breedDOY - 240 + 365)))],
+							 V[[p, 2]]["P_mov", , max(which(timeDat$DOY[timeDat$year > 80] == (breedDOY - 240 + 365)))] + V[[p, 2]]["P_stat", , max(which(timeDat$DOY[timeDat$year > 80] == (breedDOY - 240 + 365)))],
+							 V[[p, 3]]["P_mov", , max(which(timeDat$DOY[timeDat$year > 80] == (breedDOY - 240 + 365)))] + V[[p, 3]]["P_stat", , max(which(timeDat$DOY[timeDat$year > 80] == (breedDOY - 240 + 365)))])
+
+par(mfrow = c(1,1), mar = c(4,4,2,1), om a= rep(0,4))
+plot(x, Pfall[1, ], "l", ylim = range(Pfall))
+lines(x, Pfall[2, ],col = 4)
+lines(x, Pfall[3, ],col = 2)
+
+# Look during peak
+
+i <- 2
+p <- 4
+y0 <- 40
+
+affectingCalving <- list(
+	Pfall = array(NA, dim = c(3, 1135)),
+	Hcalv = array(NA, dim = c(3, 1135)),
+	calf= array(NA, dim = c(3, 1135))
+)
+
+for(r in 1:3){
+	# Peak host population
+	y2p <- annualSumm[[i, p, r]][, 2]
+	yearPeakH <- tail(c(2:(length(y2p)-1))[which(y2p[2:(length(y2p)-1)] >  y2p[3:length(y2p)] & y2p[2:(length(y2p)-1)] > y2p[1:(length(y2p)-2)])], 1) 
+	timeIndex <- which(timeDat$year[timeDat$year > 80] == yearPeakH & timeDat$DOY[timeDat$year > 80] == (breedDOY - 240 + 365))
+	
+	affectingCalving$Pfall[r, ] <- V[[p,r]]["P_mov", , timeIndex] + V[[p, r]]["P_stat", , timeIndex]
+	
+	timeIndex <- which(timeDat$year[timeDat$year > 80] == yearPeakH & timeDat$DOY[timeDat$year > 80] == breedDOY)
+	affectingCalving$Hcalv[r, ] <- V[[p,r]]["adult_mov", , timeIndex] + V[[p, r]]["adult_stat", , timeIndex]
+	affectingCalving$calf[r, ] <- V[[p,r]]["calf_mov", , timeIndex+2] + V[[p, r]]["calf_stat", , timeIndex+2]
+}
+
+par(mfrow = c(3,1))
+for(m in 1:3){
+	plot(x, affectingCalving[[m]][1, ], "n", ylim = range(affectingCalving[[m]]))
+	for(r in 1:3){
+		lines(x, affectingCalving[[m]][r, ], col = c(1,4,2)[r])
+	}
+	mtext(side = 3, c("Parasites at breeding", "Hosts at calving", "New calves 2 days after calving")[m])
+}
+
+plot(x, affectingCalving[[m]][1, ], "n", ylim = range(affectingCalving[[m]]), xlim = c(400, 800))
+for(r in 1:3){
+	lines(x, affectingCalving[[3]][r, ], col = c(1,4,2)[r])
+}
+
+plot(y0:y, annualSumm[[2, 1, 1]][y0:y, 2], "n")
+for(r in 1:3){
+	lines(y0:y, annualSumm[[2, 1, r]][y0:y, 2], col = c(1,4,2)[r])
+}
+
+# Summarize all space through time
+# Peak host population year
+Ppop <- array(NA, dim = c(3, 365))
+for(r in 1:3){
+	# Peak host population
+	y2p <- annualSumm[[i, p, r]][, 2]
+	yearPeakH <- tail(c(2:(length(y2p)-1))[which(y2p[2:(length(y2p)-1)] >  y2p[3:length(y2p)] & y2p[2:(length(y2p)-1)] > y2p[1:(length(y2p)-2)])], 1) 
+	timeIndex <- which(timeDat$year[timeDat$year > 80] == yearPeakH)
+	
+	Ppop[r, ] <- apply(V[[p,r]]["P_mov", , timeIndex] + V[[p, r]]["P_stat", , timeIndex], 2, sum)
+	}
+
+plot(1:365, Ppop[1,], "n", xlim = c(100, 200), ylim = range(Ppop))
+for(r in 1:3){
+	lines(1:365, Ppop[r, ], col = c(1,4,2)[r])
+}

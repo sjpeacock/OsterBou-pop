@@ -141,36 +141,47 @@ model2 <- function(){
 # Model 3: A A SSU
 ##########################################################################
 model3 <- function(){
-	for(j in 1:3){
+	
+	# For each parameter (u0, u1, rho), draw base value (a) and activiation 
+	# energy (E)
+	for(j in 1:3){ #  
 		a[j] ~ dlnorm(log(0.5), pow(1, -2)) 
 		E[j] ~ dlnorm(log(0.65), pow(0.5, -2))
 		}
 	
+	# Set upper threshold to zero for the two Arrhenius relationships
 	for(j in 1:2){
 		Eh[j]<-0
-		Th[j]<-0}
+		Th[j]<-0
+		}
 	
+	# Draw upper thresholds for the SS relationship of u1
 	Eh[3] ~ dlnorm(log(3.25), pow(1, -2)) 
 	Th[3] ~ dnorm(23, pow(3, -2))
 	
-	for(i in 1:nT){
-		for(j in 1:2){# u0, u1, rho
+	# Calculate temperature-specific mean parameter value
+	for(i in 1:nT){ # for each temperature treatment
+		for(j in 1:2){# for the two Arrhenius relationships (u0, u1)
 			p.mean[i,j] <- a[j]*exp(-E[j]/(8.62*10^-5)*(1/(T.obs[i]+273.15)-1/(15+273.15)))
 		}
+		
+		# For the SS relationships (rho)
 		p.mean[i,3] <- a[3]*exp(-E[3]/(8.62*10^-5)*(1/(T.obs[i]+273.15)-1/(15+273.15)))*(1+exp(Eh[3]/(8.62*10^-5)*(-1/(T.obs[i]+273.15)+1/(Th[3]+273.15))))^(-1)
 	}
+	
 	# Sigma - constant across temperature; no metabolic theory underpinning
 	sigma.log ~ dnorm(0, 0.01)
 	for(i in 1:nT){p.mean[i,4] <- exp(sigma.log)}
 	
-	# Model parameters (u0, u1, rho, sigma) for each temp and replicate
-	for(i in 1:nT){
-		for(k in 1:nk){
-			for(j in 1:4){
+	# Draw random model parameters (u0, u1, rho, sigma) for each temp and replicate
+	for(i in 1:nT){ # for each temperature
+		for(k in 1:nk){ # for each replicate
+			for(j in 1:4){ # for each parameter
 				p.rep[i,j,k]  ~ dlnorm(log(p.mean[i,j]), sigp^(-2))}}}
-	# Starting number
-	for(i in 1:nT){
-		for(k in 1:nk){
+	
+	# Draw starting number of eggs in each temp and replicate
+	for(i in 1:nT){ # for each temperature
+		for(k in 1:nk){ # for each replicate
 			N0[i,k] ~ dlnorm(log(50)-1/2*(sigN0^2), 1/(sigN0^2))}}
 	
 	#------------------------------------------------------------------
@@ -178,10 +189,12 @@ model3 <- function(){
 	#------------------------------------------------------------------
 	for(i in 1:nT){ # for each temperature
 		for(k in 1:nk){ # for each replicate
+			
 			# Pre-infectives
 			for(j in 1:nt){
 				N[i,1,j,k]<-N0[i,k]*exp(-p.rep[i,1,k]*t[j])*(1-phi((log(t[j]*p.rep[i,3,k])+p.rep[i,4,k]^2/2)/p.rep[i,4,k]))
 			}
+			
 			# Infectives that develop at time "jj"
 			for(j in 1:nt){
 				N1_start[i,j,k]<-N0[i,k]/(t[j]*sqrt(2*3.141593*p.rep[i,4,k]^2))*exp(-1/(2*p.rep[i,4,k]^2)*(log(t[j]*p.rep[i,3,k])+p.rep[i,4,k]^2/2)^2-p.rep[i,1,k]*t[j])
@@ -199,12 +212,19 @@ model3 <- function(){
 	#----------------------------
 	# Data model
 	#----------------------------
+	# n_obs[i,j,k,l,s] is the observed number of  larvae alive in 
+	# temperature i, time j, replicate k, count l, and stage s
+	
 	for(i in 1:nT){ #for each temperature
 		for(k in 1:nk){ # for each replicate
 			for(l in 1:3){ # for each of three counts
+				
+				# Likelihood of initial number of eggs
 				n_obs[i,1,k,l,1] ~ dpois(N0[i,k])
-				for(s in 1:2){ #for each stage
-					for(j in 2:nt_obs[i,k]){
+				
+				# Likelihood of preinfective and infective stages
+				for(s in 1:2){ # for each stage
+					for(j in 2:nt_obs[i,k]){ # for each timestep
 						n_obs[i,j,k,l,s] ~ dpois(max(10^-10, N[i,s,ind[i,j,k],k]))
 					}}}}}
 } #end model

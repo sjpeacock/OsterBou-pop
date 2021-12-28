@@ -179,15 +179,6 @@ plot(fit_u0, las = 1)
 # summary(fit_u0_nls)
 # 
 
-# Plots to Ale's data
-temp.all <- seq(-50, 40, 0.2)
-plot(temp.all, predict.MTE(params = c(a = 0.068, E = 0.884, Eh =NA, Th = NA, El = summary(fit_u0)[[1]]['El', 1], Tl = summary(fit_u0)[[1]]['Tl', 1],  z = 1), temp.all), "l", ylim = c(0,1))
-# lines(temp.all, predict.MTE(params = c(a = 0.068, E = 0.884, Eh =NA, Th = NA, El = summary(fit_u0_nls)$parameters['El', 1], Tl = summary(fit_u0_nls)$parameters['Tl', 1],  z = 1), temp.all), lty =2, col = 2)								 
-
- # Ale's marshallagia study
-points(-9, 0.0855, pch = 3, col = 5, xpd = NA, lwd = 2) #L1
-points(-20, 0.9857, pch = 3, col = 5, xpd = NA, lwd = 2) #L1
-points(-35, 3, pch = 3, col = 5, xpd = NA, lwd = 2) #L1
 
 #------------------------------------------------------------------------------
 # u3 fit
@@ -221,11 +212,25 @@ plot(fit_u3)
 # fit_u3_nls <- nls(formula = y ~ 0.0211 * exp(- 0.208 /(8.62*10^-5) * (1/(temp + 273.15) - 1/(15 + 273.15))) * (1 + exp(El / (8.62*10^-5)*(1/(temp+273.15)-1/(Tl+273.15))) + exp(3.5543 / (8.62*10^-5)*(-1/(temp+273.15)+1/(27.6+273.15)))), data = data.frame(y = c(0.002344, 0.01762), temp = c(-9, -20)), start = list(El = 3.25, Tl = 0))
 # summary(fit_u3_nls)
 
+#---------------------
+# Plots to Ale's data
+quartz(width = 6.3, height = 3.8, pointsize = 10)
+par(mfrow = c(1,2), mar = c(4,4,2,1))
 
-plot(temp.all, predict.MTE(params = c(a = 0.0211, E = 0.208, Eh = 3.5543, Th = 27.6, El = summary(fit_u3)[[1]]['El', 1], Tl = summary(fit_u3)[[1]]['Tl', 1],  z = 1), temp = temp.all), "l", ylim = c(0,0.1))
+temp.all <- seq(-50, 40, 0.2)
+plot(temp.all, predict.MTE(params = c(a = 0.068, E = 0.884, Eh =NA, Th = NA, El = summary(fit_u0)[[1]]['El', 1], Tl = summary(fit_u0)[[1]]['Tl', 1],  z = 1), temp.all), "l", ylim = c(0,1), ylab = expression(paste("Mortality of pre-infectives (", mu[0], ")")), las = 1, xlab = expression(paste("Temperature (", degree, "C)")))
+# lines(temp.all, predict.MTE(params = c(a = 0.068, E = 0.884, Eh =NA, Th = NA, El = summary(fit_u0_nls)$parameters['El', 1], Tl = summary(fit_u0_nls)$parameters['Tl', 1],  z = 1), temp.all), lty =2, col = 2)								 
+
+# Ale's marshallagia study
+points(-9, 0.0855, pch = 3, col = 2, xpd = NA, lwd = 2) #L1
+points(-20, 0.9857, pch = 3, col =2, xpd = NA, lwd = 2) #L1
+points(-35, 3, pch = 3, col = 2, xpd = NA, lwd = 2) #L1
+mtext(side = 3, line = 0.5, "A", adj = 0)
+plot(temp.all, predict.MTE(params = c(a = 0.0211, E = 0.208, Eh = 3.5543, Th = 27.6, El = summary(fit_u3)[[1]]['El', 1], Tl = summary(fit_u3)[[1]]['Tl', 1],  z = 1), temp = temp.all), "l", ylim = c(0,0.1), ylab = expression(paste("Mortality of infectives (", mu[3], ")")), las = 1, xlab = expression(paste("Temperature (", degree, "C)")))
 			
 # Ale's marshallagia study
-points(-9, 0.002344, pch = 3, col = 5, xpd = NA, lwd = 2) #L3
-points(-20, 0.01762, pch = 3, col = 5, xpd = NA, lwd = 2) #L3
-points(-35, 3, pch = 3, col = 5, xpd = NA, lwd = 2) #L3
+points(-9, 0.002344, pch = 3, col = 2, xpd = NA, lwd = 2) #L3
+points(-20, 0.01762, pch = 3, col = 2, xpd = NA, lwd = 2) #L3
+points(-35, 3, pch = 3, col = 2, xpd = NA, lwd = 2) #L3
+mtext(side = 3, line = 0.5, "B", adj = 0)
 
