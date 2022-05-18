@@ -8,7 +8,7 @@
 ###############################################################################
 
 source("simulations/bouSetup.R")
-source("simulations/popFunctionsGround.R")
+source("simulations/popFunctions.R")
 
 library(gplots)
 library(ggsci)
@@ -28,7 +28,7 @@ N <- 6
 
 # Read in temperature data including CC scenarios
 # Can choose different temperature profiles depending on migration route
-tempDat <- readRDS(paste0("tempData/allTemps_migPath", N, ".rds"))
+tempDat <- readRDS(paste0("tempData/migRouteOutput/allTemps_migPath", N, ".rds"))
 
 # Starting abundance of parasites in adults
 # From Bathurst surveys, appprox. 
@@ -50,9 +50,9 @@ oneYear <- readRDS(paste0("simulations/output/oneYear30_migPath", N, ".rds"))
 #------------------------------------------------------------------------------
 # Plot
 #------------------------------------------------------------------------------
-
+migCols <- cols[c(4,1)] #c(1, grey(0.5))
 # Plot all levels of transmission or just the base level?
-allBeta <- TRUE
+allBeta <- FALSE
 
 # Plot resident populations in dashed
 plotRes <- TRUE
@@ -67,7 +67,7 @@ if(allBeta == TRUE){
 	
 } else{
 	I <- 2
-	quartz(width = 4, height = 6, pointsize = 10)
+	quartz(width = 5, height = 7, pointsize = 12)
 	layout(mat =	matrix(c(rep(1:3, each = 3), 6, rep(4:5, each = 3)), ncol = 1))
 }
 
@@ -77,7 +77,7 @@ yPerc <- 0.2
 
 if(allBeta == FALSE){
 	par(oma = c(4, 5, 4, 1))
-	par(mar = c(0,4,0,1))
+	par(mar = c(0,5,0,1))
 } else {
 	par(oma = c(4, 9, 4, 1))
 	par(mar = c(0,0,0,1))
@@ -97,28 +97,33 @@ for(i in I){
 			plot(xDate, oneYear[1, i, 1, 1, ], "n", ylim = ylim.s, yaxt = "n", ylab = "", xaxt = "n", xaxs = "i")
 		}
 		
-		# Plot migration periods as shaded
-		u <- par('usr')
-		polygon(x = as.Date(paste(2300, c(110, 153, 153, 110), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Spring migration
-		polygon(x = as.Date(paste(2300, c(169, 180, 180, 169), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Post-calving migration
-		polygon(x = as.Date(paste(2300, c(251, 355, 355, 251), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Fall migration
+		if(i == min(I)){
+			zz <- pretty(ylim.s, n = 4)
+			axis(side = 2, las = 1, at = zz, labels = zz*10^(-c(rep(5, 3), rep(13, 2))[s]))
+		}
+		
+		# # Plot migration periods as shaded
+		# u <- par('usr')
+		# polygon(x = as.Date(paste(2030, c(110, 153, 153, 110), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Spring migration
+		# polygon(x = as.Date(paste(2030, c(169, 180, 180, 169), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Post-calving migration
+		# polygon(x = as.Date(paste(2030, c(251, 355, 355, 251), sep = "-"), format = "%Y-%j"), y = u[c(3,3,4,4)], col = grey(0.9), border = NA) # Fall migration
 		
 		
 		if(s == 1 & i == min(I)) legend("topright", lty = 1:4, legend = paste("Scenario", c(1:4)), bg = "white", xpd = NA, bty = "n")
 		
 		for(p in 1:4){
-			lines(xDate, oneYear[1, i, p, s, ], lty = p)
-			if(plotRes == TRUE) lines(xDate, oneYear[2, i, p, s, ], lty = p, col = "#00000050")
+			lines(xDate, oneYear[1, i, p, s, ], lty = p, col = migCols[1])
+			if(plotRes == TRUE) lines(xDate, oneYear[2, i, p, s, ], lty = p, col = migCols[2])
 		}
 		
-		if(i == 1 | allBeta == FALSE) mtext(side = 2, line = 1, c("Adult\nparasites", "Arrested\nlarvae", "Developing\nlarvae", "Pre-infective", "Infective")[s])
+		if(i == 1 | allBeta == FALSE) mtext(side = 2, line = 3, c("Adult\nparasites", "Arrested\nlarvae", "Developing\nlarvae", "Pre-infective", "Infective")[s], cex = 0.66)
 		if((i == 1 | allBeta == FALSE) & s == 1){
 		}
 		if(allBeta == FALSE){
 			mtext(side = 3, line = -1.5, paste("", LETTERS[s]), adj = 0)
-			if(s == 5) legend(21980, 1.6e14, fill = c(1, grey(0.5)), border = NA, xpd = NA, bty = "n", legend = c("Migratory", "Non-migratory"), ncol = 2)
+			if(s == 5) legend(21980, 1.6e14, fill = migCols, border = NA, xpd = NA, bty = "n", legend = c("Migratory", "Non-migratory"), ncol = 2)
 		} else {
-			if(i == 1 & s == 5) legend(21980, 1.6e14, fill = c(1, grey(0.5)), border = NA, xpd = NA, bty = "n", legend = c("Migratory", "Non-migratory"), ncol = 2)
+			if(i == 1 & s == 5) legend(21980, 1.6e14, fill = migCols, border = NA, xpd = NA, bty = "n", legend = c("Migratory", "Non-migratory"), ncol = 2)
 		}
 		
 		
@@ -126,10 +131,16 @@ for(i in I){
 	
 	if(i == min(I)){
 		u <- par('usr')
-		segments(x0 = u[1] - 0.25*(u[2] - u[1]), x1 = u[1] - 0.25*(u[2] - u[1]), y0 = 5.5*u[4], y1 = 2.3*u[4], xpd = NA)
-		text(u[1] - 0.3*(u[2] - u[1]), mean(c(5.5*u[4], 2.3*u[4])), "Within-host parasite stages", xpd = NA, srt = 90, cex = 1.5)
-		segments(x0 = u[1] - 0.25*(u[2] - u[1]), x1 = u[1] - 0.25*(u[2] - u[1]), y0 = 2*u[4], y1 = 0, xpd = NA)
-		text(u[1] - 0.3*(u[2] - u[1]), u[4], "Free-living parasite stages", xpd = NA, srt = 90, cex = 1.5)
+		if(allBeta == TRUE){
+			xx <- u[1] - c(0.35, 0.4)*(u[2] - u[1])
+		} else{
+			xx <- u[1] - c(0.23, 0.28)*(u[2] - u[1])
+		}
+		
+		segments(x0 = xx[1], x1 = xx[1], y0 = 5.5*u[4], y1 = 2.3*u[4], xpd = NA)
+		text(xx[2], mean(c(5.5*u[4], 2.3*u[4])), expression(paste("Within-host parasite stages (", {}%*%10^-5, ")")), xpd = NA, srt = 90)
+		segments(x0 = xx[1], x1 = xx[1], y0 = 2*u[4], y1 = 0, xpd = NA)
+		text(xx[2], u[4], expression(paste("Free-living parasite stages (", {}%*%10^-13, ")")), xpd = NA, srt = 90)
 	}
 	
 } #end i
