@@ -60,7 +60,7 @@ mtext(side = 2, line = 4.5, "Difference in calving rates")
 # This study
 plot(P_mean.all, calves.all[, 1], "l", ylim = range(calves.all, na.rm = TRUE), xlab = "", ylab = "", las = 1, xlim=c(0, 16000), lwd = 1.5, col = cols[1])
 mtext(side = 2, line = 3.5, "Calving rate [p(x)]")
-mtext(side = 1, line = 3, "Mean parasite burden [x]")
+mtext(side = 1, line = 3, expression(paste("Mean parasite burden [", bar(P), "]")))
 abline(h = 0.8, lty = 3)
 lines(P_mean.all, calves.all[,2], lwd = 1.5)
 lines(P_mean.all, calves.all[, 3], lwd = 0.8)

@@ -3,7 +3,7 @@
 # Larval shedding depends on paraiste infection intensity and time of year
 ###############################################################################
 
-DOY <- c(1:365)/365
+DOY <- c(1:365)
 
 beta <- 0.49
 a1 <- 0.010
@@ -19,3 +19,9 @@ k2 <- 0.02
 FPR <- a1 + a2/(sig*sqrt(2*pi)) * exp(-(DOY - mu)^2/(2*sig^2))
 
 plot(as.Date(paste("2020", DOY*365, sep="-"), format = "%Y-%j"), FPR, "l")
+
+##########
+
+mu <- strftime(as.Date("2020-11-01"), format = "%j")
+y <- a1 + a2/(sig*sqrt(2*pi)) * exp(-(DOY - mu)^2/(2*sig^2))
+

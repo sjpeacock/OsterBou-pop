@@ -238,6 +238,12 @@ for(n in 1:n.mcmc){
 				# standardize the distances
 				n.zz <- (d.zz - mean(d.zz))/sd(d.zz)
 				step[[i]][j, ] <- clippedGrid[clippedGrid$EID == zz$EID[sample(1:length(d.zz), prob = 1/(1 + exp(3*n.zz)), size = 1)], ]
+				
+				# # Plot function
+				# d.zz <- c(0:1000)
+				# n.zz <- (d.zz - mean(d.zz))/sd(d.zz)
+				# plot(d.zz, 1/(1 + exp(3*n.zz)), "l", las = 1, xlab = "Distance to stopover site", ylab = "Weight assigned to step")
+				# 
 			} else {
 				step[[i]][j, ] <- clippedGrid[clippedGrid$EID == zz$EID[which(d.zz == 0)], ]
 			}
