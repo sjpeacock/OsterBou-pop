@@ -105,11 +105,17 @@ sumNLL$AICoverall <- round(calcAIC(nLL = sumNLL$overall, nParams = as.numeric(mo
 ###############################################################################
 # Tables with model comparison
 ###############################################################################
-write.csv(sumNLL, file = "dataAnalysis/output/modelComparison_Isigma.csv")
+write.csv(sumNLL, file = "MTE_dataAnalysis/output/R1/modelComparison.csv")
 
 ###############################################################################
 # Tables with parameter output
 ###############################################################################
+
+#------------------------------------------------------------------------------
+# Best model
+bestMod <- 5
+#------------------------------------------------------------------------------
+
 if(Isigma == TRUE){
 	tab <- data.frame(
 		temp = c(dat$T.obs, "y[0]", "E"),
@@ -187,7 +193,50 @@ if(Isigma == TRUE){
 		NA)
 )
 }
-write.csv(tab, file = "dataAnalysis/output/bestModelParameters_Isigma.csv")
+write.csv(tab, file = "MTE_dataAnalysis/output/R1/dpoisN0/bestModelParameters.csv")
+
+#------------------------------------------------------------------------------
+# Model 10: mu_3 as SSU
+#------------------------------------------------------------------------------
+
+tab <- data.frame(
+	temp = c(dat$T.obs, "sigma", "y[0]", "E", "Eh", "T[h]", "sigma"),
+	mu0 = c(paste(
+		sprintf("%.3f", exp(summary.in[[1, 6]][[1]][c(1:7,22), 1])), " (", 
+		sprintf("%.3f", exp(summary.in[[1, 6]][[2]][c(1:7,22), 1])), ", ",
+		sprintf("%.3f", exp(summary.in[[1, 6]][[2]][c(1:7,22), 5])), ")", sep=""),
+		paste(
+			sprintf("%.3f", summary.in[[10, 6]][[1]][c('a[1]', "E[1]"), 1]), " (", 
+			sprintf("%.3f", summary.in[[10, 6]][[2]][c('a[1]', "E[1]"), 1]), ", ", 
+			sprintf("%.3f", summary.in[[10, 6]][[2]][c('a[1]', "E[1]"), 5]), ")", sep=""),
+		c(NA, NA),
+		paste(
+			sprintf("%.3f", exp(summary.in[[bestMod, 6]][[1]]['sigma.log', 1])), " (", 
+			sprintf("%.3f", exp(summary.in[[bestMod, 6]][[2]]['sigma.log', 1])), ", ", 
+			sprintf("%.3f", exp(summary.in[[bestMod, 6]][[2]]['sigma.log', 5])), ")", sep="")),
+	mu3 = c(paste(
+		sprintf("%.3f", exp(summary.in[[1, 6]][[1]][c(8:14), 1])), " (", 
+		sprintf("%.3f", exp(summary.in[[1, 6]][[2]][c(8:14), 1])), ", ",
+		sprintf("%.3f", exp(summary.in[[1, 6]][[2]][c(8:14), 5])), ")", sep=""),
+		NA,
+		paste(
+			sprintf("%.3f", summary.in[[10, 6]][[1]][c('a[2]', "E[2]", "Eh[2]", "Th[2]"), 1]), " (", 
+			sprintf("%.3f", summary.in[[10, 6]][[2]][c('a[2]', "E[2]", "Eh[2]", "Th[2]"), 1]), ", ", 
+			sprintf("%.3f", summary.in[[10, 6]][[2]][c('a[2]', "E[2]", "Eh[2]", "Th[2]"), 5]), ")", sep=""),
+		NA),
+	rho = c(paste(
+		sprintf("%.3f", exp(summary.in[[1, 6]][[1]][15:21, 1])), " (", 
+		sprintf("%.3f", exp(summary.in[[1, 6]][[2]][15:21, 1])), ", ",
+		sprintf("%.3f", exp(summary.in[[1, 6]][[2]][15:21, 5])), ")", sep=""),
+		NA, 
+		paste(
+			sprintf("%.3f", summary.in[[bestMod, 6]][[1]][c('a[3]', 'E[3]', 'Eh[3]', 'Th[3]'), 1]), " (", 
+			sprintf("%.3f", summary.in[[bestMod, 6]][[2]][c('a[3]', 'E[3]', 'Eh[3]', 'Th[3]'), 1]), ", ", 
+			sprintf("%.3f", summary.in[[bestMod, 6]][[2]][c('a[3]', 'E[3]', 'Eh[3]', 'Th[3]'), 5]), ")", sep=""),
+		NA)
+)
+
+write.csv(tab, file = "MTE_dataAnalysis/output/R1/tenModelParameters.csv")
 
 ###############################################################################
 ## Plot I estimates and MTE overall
