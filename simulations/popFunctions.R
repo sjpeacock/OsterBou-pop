@@ -100,7 +100,7 @@ partial_t.Bou <- function(y, p){
 	
 	#*****************************************************************************
 	# 7) Larvae
-	dy['L0', ] <- p$lambda * (y['adult_stat', ] * y['P_stat', ]^(1 + p$phi) + y['adult_mov', ] * y['P_mov', ]^(1 + p$phi)) - (p$mu0 + p$rho0) * y['L0', ]
+	dy['L0', ] <- p$lambda * (y['adult_stat', ] * y['P_stat', ]^(1 + p$gamma) + y['adult_mov', ] * y['P_mov', ]^(1 + p$gamma)) - (p$mu0 + p$rho0) * y['L0', ]
 	
 	dy['L3', ] <- p$rho0 * y['L0', ] - p$mu3 * y['L3', ] - p$beta * y['L3', ]* (y['adult_stat', ] + y['adult_mov', ])
 	
@@ -208,7 +208,7 @@ numCalves <- function(P_mean, numFemales, pCalf0){#, stoch = FALSE){
 
 calcParams <- function(DOY, temp, ppnInhibit = 0, transmission = "base"){
 	
-	if(transmission == "base") beta <- 10^-6 else if(transmission == "high") beta <- 10^-5 else if(transmission == "low") beta <- 10^-7
+	if(transmission == "base") beta <- 10^-6 else if(transmission == "high") beta <- 10^-5 else if(transmission == "low") beta <- 10^-7 else beta <- as.numeric(transmission)
 	
 	# Need to have parameters as a list because the parameters for stationary larvae will vary in space and time
 	params <- list(
@@ -259,13 +259,14 @@ calcParams <- function(DOY, temp, ppnInhibit = 0, transmission = "base"){
 	# plot(seq(1, 10^18, length.out = 100), 0.1713 + 0.3082 * 10^-6 *  seq(1, 10^18, length.out = 100), "l")
 	# Likely insignificant over the ranges of parasites that we see, use mean
 	muP = 0.1713,
+	
 	nuP = 0.3082e-6,
 		
 	# *lambda* - time-varying rate of egg output per adult parasite
 	lambda = predict.lambda(DOY)*10^-2,
 	
-	# phi - density dependence of parasite fecundity (-0.49 Stien et al. 2002 Int J Parasit) 
-	phi = -0.49,
+	# gamma - density dependence of parasite fecundity (-0.49 Stien et al. 2002 Int J Parasit) 
+	gamma = -0.49,
 	
 	# *mu0* - mortality rate (per day) of pre-infective larvae
 	mu0 = predict.mu0(temp),
