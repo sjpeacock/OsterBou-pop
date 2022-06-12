@@ -5,6 +5,7 @@
 .DS_Store
 
 README.Rmd
+LICENSE.Rmd
 
 ignoreCode/ 
 
@@ -15,6 +16,7 @@ BathurstSurvey/
 
 simulations/output
 simulations/ignore 
+simulations/R1.R
 
 tempData/migRouteOutput
 tempData/NARR/otherDat
@@ -28,3 +30,4 @@ ranges/
 
 *.rds
 *.RData
+

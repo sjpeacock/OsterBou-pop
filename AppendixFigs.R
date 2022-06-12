@@ -1,6 +1,7 @@
 ###############################################################################
 # Host stopping and starting
 ###############################################################################
+cols <- wesanderson::wes_palette("Darjeeling1")
 
 source("simulations/bouSetup.R")
 source("simulations/popFunctions.R")
@@ -13,8 +14,8 @@ source("simulations/calcGrid.R")
 
 breaks <- seq(0, 0.99, 0.01)
 length(breaks)
-startCol <- colorRampPalette(colors = c("white", 3, 1))(n = 100)
-stopCol <- colorRampPalette(colors = c("white", 2, 1))(n = 100)
+startCol <- colorRampPalette(colors = c("white", cols[2], 1))(n = 100)
+stopCol <- colorRampPalette(colors = c("white", col[1], 1))(n = 100)
 
 axisDates <- as.numeric(strftime(as.Date(paste(2001, c(1:12), 01, sep = "-"), format = "%Y-%m-%d"), format = "%j"))
 
@@ -26,12 +27,15 @@ par(mfrow = c(1,2), mar = c(1,1,1,0), oma = c(4,5,2,8))
 plot(rep(seq(1, 1135*2, 2), each = 365), rep(1:365, 1135) , pch = 15, cex = 0.2, col = startCol[findInterval(startMat, breaks)], yaxt = "n", xlab = "", ylab = "", xaxs = "i", yaxs = "i")
 axis(side = 2, at = axisDates, labels = month.abb, las = 1)
 mtext(side = 3, adj = 0, line = 0.5, "A) Starting rate")
+# lines(locAdults, 1:365, col = cols[3], lwd = 2)
+lines(leadAdults, 1:365, col = cols[4], lwd = 2)
 
 # Stopping rates
 plot(rep(seq(1, 1135*2, 2), each = 365), rep(1:365, 1135), pch = 15, cex = 0.2, col = stopCol[findInterval(stopMat, breaks)], yaxt = "n", xaxs = "i", yaxs = "i")
 axis(side = 2, at = axisDates, labels = FALSE)
 abline(v = c(660, 1500, 1650), lty = 2, col = grey(0.8))
 mtext(side = 3, adj = 0, line = 0.5, "B) Stopping rate")
+lines(leadAdults, 1:365, col = cols[4], lwd = 2)
 
 # Legend
 yBreaks <- seq(1,365,length.out = 100)[round(seq(1, 100, length.out = 11))]
