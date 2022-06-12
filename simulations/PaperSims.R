@@ -23,7 +23,7 @@ for(N in c(6, 1, 3)){
 	
 	# Read in temperature data including CC scenarios
 	# Can choose different temperature profiles depending on migration route
-	tempDat <- readRDS(paste0("tempData/allTemps_migPath", N, ".rds"))
+	tempDat <- readRDS(paste0("tempData/migRouteOutput/allTemps_migPath", N, ".rds"))
 	
 	# Starting abundance of parasites in adults
 	# From Bathurst surveys, appprox. 
@@ -90,7 +90,7 @@ for(N in c(6, 1, 3)){
 	# }
 	
 	saveRDS(initBou, file = paste0("simulations/output/initBou_migPath", N, ".rds"))
-	# initBou0 <- readRDS(paste0("simulations/output/initBou_migPath", N, ".rds"))
+	# initBou <- readRDS(paste0("simulations/output/initBou_migPath", N, ".rds"))
 	
 	
 	###############################################################################
@@ -111,6 +111,7 @@ for(N in c(6, 1, 3)){
 	for(m in 1:2){ # for migratory and non-migratory simulations
 		for(i in 1:3){ # for 3 levels of transmission
 			for(p in 1:4){ # for 4 levels of parasite inhibition
+				
 				V.dum <- simBou(
 					initBou = Bou0, 
 					temp = tempDat$current,
@@ -119,7 +120,8 @@ for(N in c(6, 1, 3)){
 					transmission = c("low", "base", "high")[i])
 				
 				V.annual[[m, i, p]] <- V.dum[, , which(timeDat$year == 30)]
-			}}
+			}
+		}
 	}
 	
 	#------------------------------------------------------------------------------
@@ -128,6 +130,13 @@ for(N in c(6, 1, 3)){
 	
 	oneYear <- array(NA, dim = c(2, 3, 4, 5, 365))
 	# dimensions = beta (3) * inhibition (4) * variable * day
+	# Variables
+	#    1) Mean adult parasite burden
+	#    2) Mean L4A parasite burden
+	#    3) Mean L4 parasite burden
+	#    4) Total L0
+	#    4) Total L3
+	
 	
 	for(m in 1:2){ # for migratory and resident
 		for(i in 1:3){
