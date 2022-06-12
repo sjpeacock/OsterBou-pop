@@ -190,7 +190,9 @@ mod_u3Lower <- function(){
 	
 	# Model prediction
 	for(i in 1:length(rate)){
+		
 		rate_pred[i] <- 0.0211 * exp(- 0.208 /(8.62*10^-5) * (1/(temp[i] + 273.15) - 1/(15 + 273.15))) * (1 + exp(El / (8.62*10^-5)*(1/(temp[i] + 273.15)-1/(Tl+273.15))) + exp(3.5543 / (8.62*10^-5)*(-1/(temp[i] + 273.15)+1/(27.6+273.15))))
+		
 	}
 	
 	# Likelihood

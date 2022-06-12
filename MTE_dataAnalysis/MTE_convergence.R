@@ -1,7 +1,10 @@
+
+# out.all <- readRDS("MTE_dataAnalysis/output/outAll10.rds")
+
 ###############################################################################
 ## Convergence diagnostics
 ###############################################################################
-Isigma <- TRUE
+Isigma <- FALSE
 
 includeChains <- list();length(includeChains) <- dim(models2test)[1]*6
 dim(includeChains) <- c(dim(models2test)[1], 6)
@@ -99,7 +102,7 @@ summary.in <- in.all
 meanEst.all <- list(); length(meanEst.all) <- dim(models2test)[1]
 Rhat.all <- list(); length(Rhat.all) <- dim(models2test)[1]
 
-for(m in 1:dim(models2test)[1]){
+for(m in 1:nrow(models2test)){
 	
 	Rhat.all[[m]] <- matrix(nrow = as.numeric(models2test[m, 'nParams']), ncol = 6)
 	meanEst.all[[m]] <- matrix(nrow = as.numeric(models2test[m, 'nParams']), ncol = 6)
@@ -127,6 +130,7 @@ for(m in 1:dim(models2test)[1]){
 		
 		# Summary of model output, including parameters
 		in.all[[m, K]] <- list(); length(in.all[[m, K]]) <- length(includeChains[[m, K]])
+		
 		for(i in 1:length(includeChains[[m, K]])){
 			in.all[[m, K]][[i]] <- as.mcmc(matrix(
 				out.all[[m, K]][[includeChains[[m, K]][i]]][, parIndex], 
@@ -147,28 +151,25 @@ for(m in 1:dim(models2test)[1]){
 		
 		ind <- round(seq(1, dim(out.all[[m, K]][[1]])[1], length.out = 300))
 		
-		pdf(width = 8.5, height = 11, pointsize = 10, file = paste("dataAnalysis/plots/Isigma/TracePlots_model", m, "_repOut", K, ".pdf", sep=""))
-		par(mfrow = c(4, 3), mar = c(3,2,1,1), oma = c(4,4,2,2))
-		I <- 0
-		for(i in 1:nP){
-			plot(ind, in.all[[m, K]][[1]][ind, i], "l", col = c(1:6)[includeChains[[m, K]][1]], lty = 3, xlab = "", ylab = "", main = rownames(X[[1]])[i], ylim = X[[2]][i, c(1, 5)])
-			
-			for(j in 2:length(includeChains[[m, K]])){
-				lines(ind, in.all[[m, K]][[j]][ind, i], col = c(1:6)[includeChains[[m, K]][j]], lty = 3)
-			}
-			mtext(side = 3, adj = 0, line = -2, paste("  Rhat = ", round(Rhat.all[[m]][i, K], 2)))
-			}
-		
-		plot(1,1, "n", xaxt="n", yaxt="n", bty = "n", xlab="", ylab="")
-		legend(1, 1, legend = 1:6, lwd = 1, col = 1:6, title = "chains")
-		dev.off()
+		# pdf(width = 8.5, height = 11, pointsize = 10, file = paste("MTE_dataAnalysis/plots/R1/dpoisN0/TracePlots_model", m, "_repOut", K, ".pdf", sep=""))
+		# 
+		# par(mfrow = c(4, 3), mar = c(3,2,1,1), oma = c(4,4,2,2))
+		# I <- 0
+		# for(i in 1:nP){
+		# 	plot(ind, in.all[[m, K]][[1]][ind, i], "l", col = c(1:6)[includeChains[[m, K]][1]], lwd = 0.6, xlab = "", ylab = "", main = rownames(X[[1]])[i], ylim = X[[2]][i, c(1, 5)])
+		# 	
+		# 	for(j in 2:length(includeChains[[m, K]])){
+		# 		lines(ind, in.all[[m, K]][[j]][ind, i], col = c(1:6)[includeChains[[m, K]][j]], lwd = 0.6)
+		# 	}
+		# 	mtext(side = 3, adj = 0, line = -2, paste("  Rhat = ", round(Rhat.all[[m]][i, K], 2)))
+		# 	}
+		# 
+		# plot(1,1, "n", xaxt="n", yaxt="n", bty = "n", xlab="", ylab="")
+		# legend(1, 1, legend = 1:6, lwd = 1, col = 1:6, title = "chains")
+		# dev.off()
 		
 	} # end K
+	
 	} # end m
 
 
-###############################################################################
-## How do parameter values differ among models and among leave-out reps?
-###############################################################################
-
-tempInd <- matrix(exp(summary.out[[1]][parIndex[1:21], 1]), nrow = 7, ncol = 3, byrow = FALSE)

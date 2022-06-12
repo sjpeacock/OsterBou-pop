@@ -16,7 +16,7 @@ source("MTE_dataAnalysis/functions.R")
 
 # Choose: Fit the models with contant sigma across temperatures
 #         or different (Independent) sigma for each temperature
-# source("dataAnalysis/MTE_models.R")
+source("MTE_dataAnalysis/MTE_models.R")
 # source("dataAnalysis/MTE_models_Isigma.R")
 
 # Within models, parameter order is always u0, u1, rho
@@ -29,7 +29,8 @@ models2test <- rbind(
 	model6 = c("SSU", "A", "A", 9),
 	model7 = c("SSU", "A", "SSU", 11),
 	model8 = c("SSU", "C", "A", 8),
-	model9 = c("SSU", "C", "SSU", 10))
+	model9 = c("SSU", "C", "SSU", 10),
+	model10 = c("A", "SSU", "SSU", 11))
 dimnames(models2test)[[2]] <- c("u0", "u1", "rho", 'nParams')
 
 nF <- 6 # number of "folds" (k-fold) = each of five reps plus a fit with all data
@@ -50,7 +51,7 @@ procTime <- array(NA, dim = c(dim(models2test)[1], nF), dimnames = list(rownames
 out.all <- list(); length(out.all) <- dim(models2test)[1]*6; dim(out.all) <- c(dim(models2test)[1], nF)
 
 #------------------------------------------------------------------------------
-for(m in 7:dim(models2test)[1]){ # for each model being tested
+for(m in 1:dim(models2test)[1]){ # for each model being tested
 	
 	# Pick model 
 	model <- pickModel(m)
@@ -70,7 +71,7 @@ for(m in 7:dim(models2test)[1]){ # for each model being tested
 			nt_obs = dat$nt_obs[, incl.reps],
 			ind = dat$ind[, , incl.reps],
 			n_obs = dat$n_obs[, , incl.reps, , ],
-			nk = 4,
+			nk = length(incl.reps),
 			sigN0 = 0.3,
 			sigp = 0.05
 		)
@@ -102,10 +103,34 @@ for(m in 7:dim(models2test)[1]){ # for each model being tested
 		#----------------------------------------------------------------------------
 		# Store output
 		out.all[[m, K]] <- fit.mK
-		saveRDS(fit.mK, file = paste("dataAnalysis/output/model", m, "_holdOut", K, ".rds", sep=""))
+		saveRDS(fit.mK, file = paste("MTE_dataAnalysis/output/R1/model", m, "_holdOut", K, ".rds", sep=""))
 		
-	}}
+	} # end K
+	
+	} # end m
 
-#  saveRDS(out.all, file = "dataAnalysis/outAll_Isigma.rds")
-# out.all <- readRDS("dataAnalysis/output/outAll_Isigma.rds")
+saveRDS(out.all, file = "MTE_dataAnalysis/output/R1/outAll_dpoisN0.rds")
 
+# #------------------------------------------------------------------------------
+# # Append 10th model added afer R1 on RSOS to original 9 models tested
+# #------------------------------------------------------------------------------
+# 
+# #  saveRDS(out.all, file = "dataAnalysis/outAll_Isigma.rds")
+# out.all10 <- out.all
+# out.all <- readRDS("MTE_dataAnalysis/output/outAll.rds")
+# out.all9 <- out.all
+# dim(out.all)
+# 
+# out.all <- list(); length(out.all) <- dim(models2test)[1]*6; dim(out.all) <- c(dim(models2test)[1], nF)
+# 
+# for(m in 1:9){
+# 	for(K in 1:6){
+# 		out.all[[m,K]] <- out.all9[[m, K]]
+# 	}
+# }
+# 
+# for(K in 1:6){
+# 	out.all[[10,K]] <- out.all10[[10, K]]
+# }
+# saveRDS(out.all, file = "MTE_dataAnalysis/output/outAll10.rds")
+# 
