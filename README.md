@@ -2,26 +2,26 @@ Arctic host-parasite dynamics under climate change more influenced by
 behaviour than thermal performance
 ================
 Stephanie Peacock
-December 28, 2021
+June 11, 2022
 
 ##### “OsterBou”= Ostertagia + cariBou
 
 ##### “pop” = population dynamics
 
 This repository contains data and code to reproduce the results
-presented in the submission by Peacock et al. to Royal Society Open
+presented in paper by Peacock et al. submitted to Royal Society Open
 Science, titled “Arctic host-parasite dynamics under climate change more
 influenced by behaviour than thermal performance”. The following folders
 contain the primary code and data presented:
 
-1.  `MTE_dataAnalysis` contains data (`Ostertagia_data.csv`) from lab
+1)  `MTE_dataAnalysis` contains data (`Ostertagia_data.csv`) from lab
     experiments to estimate the temperature sensitivity of development
     and mortality of free-living larvae from the parasitic nematode,
     Ostertagia gruehneri, and code to estimate the parameters in thermal
     response curves for both development and mortality from those data
     (`MTE_fitting.R`)
 
-2.  `simulations` contains code for simulating a migratory host-parasite
+2)  `simulations` contains code for simulating a migratory host-parasite
     model (Peacock et al. 2018, 2020) tailored to barren-ground caribou
     and Ostertagia, including the thermal response curves described in
     (1). The file `PaperSims.R` contains code to run the simulations and
