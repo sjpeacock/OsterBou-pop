@@ -18,12 +18,12 @@ simulations/output
 simulations/ignore 
 simulations/R1.R
 
-tempData/migRouteOutput
-tempData/NARR/otherDat
-tempData/NARR/tsoil
-
-tempData/climateChange/monthly
-tempData/climateChange/seasonal
+temperature/migRouteOutput/
+temperature/NARR/otherDat/
+temperature/NARR/tsoil/
+temperature/climateChange/monthly/
+temperature/climateChange/seasonal/
+temperature/.DS_Store
 
 figures/
 ranges/
