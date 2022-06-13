@@ -36,7 +36,7 @@ submitted for publication include:
     simulations other than the free-living larvae mortality and
     development described in (1) (Appendix B).
 
--   `tempData` includes data and code used to construct the ground
+-   `temperature` includes data and code used to construct the ground
     surface temperature profiles along the caribou migration route as
     well as the projected temperature anomalies under climate change
     (Appendix C).
